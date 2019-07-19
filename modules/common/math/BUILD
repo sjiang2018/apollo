@@ -302,6 +302,19 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "mpc_osqp",
+    hdrs = [
+        "mpc_osqp.h",
+    ],
+    deps = [
+        "//cyber/common:log",
+        "@eigen",
+        "@osqp",
+        "@osqp_eigen"
+    ],
+)
+
 cc_test(
     name = "mpc_test",
     size = "small",
