@@ -20,8 +20,8 @@
 #include <memory>
 
 #include "Eigen/Core"
-#include "OsqpEigen/OsqpEigen.h"
 #include "cyber/common/log.h"
+#include "include/OsqpEigen.h"
 #include "osqp/include/osqp.h"
 
 namespace apollo {
@@ -44,6 +44,7 @@ class MpcOsqp {
   void castMPCToQPHessian();
   void castMPCToQPGradient();
   void castMPCToQPConstraintMatrix();
+  void castMPCToQPConstraintVectors();
 
  private:
   Eigen::MatrixXd matrix_a_;
@@ -66,6 +67,9 @@ class MpcOsqp {
   Eigen::SparseMatrix<double> matrix_constraint_;
   Eigen::VectorXd lowerBound_;
   Eigen::VectorXd upperBound_;
+  Eigen::MatrixXd matrix_initial_state_;
+  Eigen::MatrixXd matrix_lower_;
+  Eigen::MatrixXd matrix_upper_;
 };
 }  // namespace math
 }  // namespace common

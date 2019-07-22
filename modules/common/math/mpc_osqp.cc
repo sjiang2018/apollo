@@ -30,11 +30,11 @@ void MpcOsqp::castMPCToQPHessian() {
     // state range
     if (i < state_dim_ * (horizon_ + 1)) {
       int posQ = i % state_dim_;
-      float value = matrix_q_[posQ][posQ];
+      float value = matrix_q_(posQ, posQ);
       if (value != 0) hessian_.insert(i, i) = value;
     } else {
       int posR = i % control_dim_;
-      float value = matrix_r_[posR][posR];
+      float value = matrix_r_(posR, posR);
       if (value != 0) hessian_.insert(i, i) = value;
     }
   }
@@ -85,40 +85,47 @@ void MpcOsqp::castMPCToQPConstraintMatrix() {
   }
 }
 
-// void castMPCToQPConstraintVectors() {
-//   // evaluate the lower and the upper inequality vectors
-//   Eigen::VectorXd lowerInequality =
-//       Eigen::MatrixXd::Zero(12 * (mpcWindow + 1) + 4 * mpcWindow, 1);
-//   Eigen::VectorXd upperInequality =
-//       Eigen::MatrixXd::Zero(12 * (mpcWindow + 1) + 4 * mpcWindow, 1);
-//   for (int i = 0; i < mpcWindow + 1; i++) {
-//     lowerInequality.block(12 * i, 0, 12, 1) = xMin;
-//     upperInequality.block(12 * i, 0, 12, 1) = xMax;
-//   }
-//   for (int i = 0; i < mpcWindow; i++) {
-//     lowerInequality.block(4 * i + 12 * (mpcWindow + 1), 0, 4, 1) = uMin;
-//     upperInequality.block(4 * i + 12 * (mpcWindow + 1), 0, 4, 1) = uMax;
-//   }
+void MpcOsqp::castMPCToQPConstraintVectors() {
+  // evaluate the lower and the upper inequality vectors
+  Eigen::VectorXd lowerInequality = Eigen::MatrixXd::Zero(
+      state_dim_ * (horizon_ + 1) + control_dim_ * horizon_, 1);
+  Eigen::VectorXd upperInequality = Eigen::MatrixXd::Zero(
+      state_dim_ * (horizon_ + 1) + control_dim_ * horizon_, 1);
+  for (int i = 0; i < horizon_ + 1; i++) {
+    lowerInequality.block(state_dim_ * i, 0, state_dim_, 1) = xMin;
+    upperInequality.block(state_dim_ * i, 0, state_dim_, 1) = xMax;
+  }
+  for (int i = 0; i < horizon_; i++) {
+    lowerInequality.block(control_dim_ * i + state_dim_ * (horizon_ + 1), 0,
+                          control_dim_, 1) = matrix_lower_;
+    upperInequality.block(control_dim_ * i + state_dim_ * (horizon_ + 1), 0,
+                          control_dim_, 1) = matrix_upper_;
+  }
 
-//   // evaluate the lower and the upper equality vectors
-//   Eigen::VectorXd lowerEquality =
-//       Eigen::MatrixXd::Zero(12 * (mpcWindow + 1), 1);
-//   Eigen::VectorXd upperEquality;
-//   lowerEquality.block(0, 0, 12, 1) = -x0;
-//   upperEquality = lowerEquality;
-//   lowerEquality = lowerEquality;
+  // evaluate the lower and the upper equality vectors
+  Eigen::VectorXd lowerEquality =
+      Eigen::MatrixXd::Zero(state_dim_ * (horizon_ + 1), 1);
+  Eigen::VectorXd upperEquality;
+  lowerEquality.block(0, 0, state_dim_, 1) = matrix_initial_state_;
+  upperEquality = lowerEquality;
+  lowerEquality = lowerEquality;
 
-//   // merge inequality and equality vectors
-//   lowerBound =
-//       Eigen::MatrixXd::Zero(2 * 12 * (mpcWindow + 1) + 4 * mpcWindow, 1);
-//   lowerBound << lowerEquality, lowerInequality;
+  // merge inequality and equality vectors
+  lowerBound_ = Eigen::MatrixXd::Zero(
+      2 * state_dim_ * (horizon_ + 1) + control_dim_ * horizon_, 1);
+  lowerBound_ << lowerEquality, lowerInequality;
 
-//   upperBound =
-//       Eigen::MatrixXd::Zero(2 * 12 * (mpcWindow + 1) + 4 * mpcWindow, 1);
-//   upperBound << upperEquality, upperInequality;
-// }
+  upperBound_ = Eigen::MatrixXd::Zero(
+      2 * state_dim_ * (horizon_ + 1) + control_dim_ * horizon_, 1);
+  upperBound_ << upperEquality, upperInequality;
+}
 
 bool MpcOsqp::MpcOsqpSolver() {
+  // cast the MPC problem as QP problem
+  castMPCToQPHessian();
+  castMPCToQPGradient();
+  castMPCToQPConstraintMatrix();
+  castMPCToQPConstraintVectors();
   // instantiate the solver
   OsqpEigen::Solver solver;
   // settings
@@ -130,7 +137,8 @@ bool MpcOsqp::MpcOsqpSolver() {
   solver.data()->setNumberOfConstraints(num_constraint_);
   if (!solver.data()->setHessianMatrix(hessian_)) return false;
   if (!solver.data()->setGradient(gradient_)) return false;
-  if (!solver.data()->setLinearConstraintsMatrix(linearMatrix_)) return false;
+  if (!solver.data()->setLinearConstraintsMatrix(matrix_constraint_))
+    return false;
   if (!solver.data()->setLowerBound(lowerBound_)) return false;
   if (!solver.data()->setUpperBound(upperBound_)) return false;
   // instantiate the solver

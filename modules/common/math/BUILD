@@ -304,6 +304,9 @@ cc_library(
 
 cc_library(
     name = "mpc_osqp",
+    srcs = [
+        "mpc_osqp.cc",
+    ],
     hdrs = [
         "mpc_osqp.h",
     ],
