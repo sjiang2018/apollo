@@ -27,7 +27,7 @@
 
 namespace apollo {
 namespace planning {
-// #define ADEBUG AINFO
+#define ADEBUG AINFO
 
 using apollo::common::Status;
 using apollo::common::math::Polygon2d;
@@ -41,12 +41,14 @@ PathReuseDecider::PathReuseDecider(const TaskConfig& config)
 
 Status PathReuseDecider::Process(Frame* const frame,
                                  ReferenceLineInfo* const reference_line_info) {
-  if (!Decider::config_.path_reuse_decider_config().reuse_path()) {
-    return Status::OK();
-  }
   // Sanity checks.
   CHECK_NOTNULL(frame);
   CHECK_NOTNULL(reference_line_info);
+  ADEBUG << frame->current_frame_planned_path().size();
+  if (!Decider::config_.path_reuse_decider_config().reuse_path() ||
+      frame->current_frame_planned_path().size() > 0) {
+    return Status::OK();
+  }
 
   // check front static blocking obstacle
   auto* mutable_path_reuse_decider_status = PlanningContext::Instance()
@@ -211,7 +213,7 @@ bool PathReuseDecider::IsCollisionFree(
     common::math::Vec2d path_position = {history_path[i].x(),
                                          history_path[i].y()};
     reference_line.XYToSL(path_position, &path_position_sl);
-    if (path_end_position_sl.s() - path_position_sl.s() <
+    if (path_end_position_sl.s() - path_position_sl.s() <=
         kNumExtraTailBoundPoint * kPathBoundsDeciderResolution) {
       break;
     }
@@ -235,8 +237,12 @@ bool PathReuseDecider::IsCollisionFree(
       for (const auto& obstacle_polygon : obstacle_polygons) {
         if (obstacle_polygon.IsPointIn(curr_point)) {
           // for debug
-          ADEBUG << "s distance to end point:"
-                 << path_end_position_sl.s() - path_position_sl.s();
+          ADEBUG << "s distance to end point:" << path_end_position_sl.s();
+          ADEBUG << "s distance to end point:" << path_position_sl.s();
+          ADEBUG << "[" << i << "]"
+                 << ", history_path[i].x(): " << std::setprecision(9)
+                 << history_path[i].x() << ", history_path[i].y()"
+                 << std::setprecision(9) << history_path[i].y();
           ADEBUG << "collision:" << curr_point.x() << ", " << curr_point.y();
           Vec2d xy_point;
           reference_line.SLToXY(curr_point_sl, &xy_point);
@@ -253,8 +259,8 @@ bool PathReuseDecider::IsCollisionFree(
 // check the length of the path
 bool PathReuseDecider::NotShortPath(DiscretizedPath* current_path) {
   // TODO(shu): use gflag
-  constexpr double kShortPathThreshold = 40;
-  return current_path->size() > kShortPathThreshold;
+  constexpr double kShortPathThreshold = 15;
+  return current_path->size() >= kShortPathThreshold;
 }
 
 bool PathReuseDecider::TrimHistoryPath(
@@ -291,6 +297,10 @@ bool PathReuseDecider::TrimHistoryPath(
   }
   trimmed_path.insert(trimmed_path.begin(), history_path[path_start_index]);
   frame->set_current_frame_planned_path(trimmed_path);
+  if (!NotShortPath(&trimmed_path)) {
+    ADEBUG << "short path: " << trimmed_path.size();
+  }
+  //   return true;
   return NotShortPath(&trimmed_path);
 }
 
