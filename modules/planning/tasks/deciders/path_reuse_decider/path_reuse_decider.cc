@@ -40,7 +40,8 @@ PathReuseDecider::PathReuseDecider(const TaskConfig& config)
     : Decider(config) {}
 
 Status PathReuseDecider::Process(Frame* const frame,
-                                 ReferenceLineInfo* const reference_line_info) {
+                                 ReferenceLineInfo* const reference_line_info
+                                 ) {
   // Sanity checks.
   CHECK_NOTNULL(frame);
   CHECK_NOTNULL(reference_line_info);
@@ -60,11 +61,19 @@ Status PathReuseDecider::Process(Frame* const frame,
   constexpr int kWaitCycle = -2;  // wait 2 cycle
   ADEBUG << "reuse or not: "
          << mutable_path_reuse_decider_status->reused_path();
+  ADEBUG << "is replane: "
+         << frame->current_frame_planned_trajectory().is_replan();
   // T -> F
   if (mutable_path_reuse_decider_status->reused_path()) {
+    bool trimmed = TrimHistoryPath(frame, reference_line_info);
     ADEBUG << "reused path";
-    if (CheckPathReusable(frame, reference_line_info) &&
-        TrimHistoryPath(frame, reference_line_info)) {
+    ADEBUG << "is replane: "
+           << frame->current_frame_planned_trajectory().is_replan();
+    ADEBUG << "is reusable: " << CheckPathReusable(frame, reference_line_info);
+    ADEBUG << "is trim successful: "<< trimmed;
+    if (!frame->current_frame_planned_trajectory().is_replan() &&
+        CheckPathReusable(frame, reference_line_info) &&
+        trimmed) {
       ++reusable_path_counter_;  // count reusable path
     } else {
       // disable reuse path
@@ -76,6 +85,9 @@ Status PathReuseDecider::Process(Frame* const frame,
     ADEBUG
         << "counter: "
         << mutable_path_decider_status->front_static_obstacle_cycle_counter();
+    ADEBUG
+        << "IsIgnoredBlockingObstacle: "
+        << IsIgnoredBlockingObstacle(reference_line_info);
     // far from blocking obstacle or no blocking obstacle for a while
     if (mutable_path_decider_status->front_static_obstacle_cycle_counter() <=
             kWaitCycle ||
@@ -296,11 +308,22 @@ bool PathReuseDecider::TrimHistoryPath(
     }
   }
   trimmed_path.insert(trimmed_path.begin(), history_path[path_start_index]);
-  frame->set_current_frame_planned_path(trimmed_path);
+//   frame->set_current_frame_planned_path(trimmed_path);
+
+  // set path
+  auto path_data = reference_line_info->mutable_path_data();
+  path_data->SetReferenceLine(&reference_line);
+//   path_data->SetFrenetPath(std::move(trimmed_path));
+  path_data->SetDiscretizedPath(DiscretizedPath(trimmed_path));
+  // path_data.set_path_label(path_boundary.label());
+  // path_data.set_blocking_obstacle_id(path_boundary.blocking_obstacle_id());
+  // candidate_path_data.push_back(std::move(path_data));
   if (!NotShortPath(&trimmed_path)) {
     ADEBUG << "short path: " << trimmed_path.size();
   }
   //   return true;
+  ADEBUG << "not short path: " << trimmed_path.size();
+  ADEBUG << "trimmed result: " << NotShortPath(&trimmed_path);
   return NotShortPath(&trimmed_path);
 }
 

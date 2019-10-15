@@ -16,3 +16,17 @@
 --use_sim_time=false
 
 --use_cyber_time=true
+
+--map_dir=/apollo/modules/map/data/san_mateo
+
+--map_dir=/apollo/modules/map/data/demo
+
+--map_dir=/apollo/modules/map/data/san_mateo
+
+--map_dir=/apollo/modules/map/data/demo
+
+--map_dir=/apollo/modules/map/data/san_mateo
+
+--map_dir=/apollo/modules/map/data/san_mateo_hdl64
+
+--map_dir=/apollo/modules/map/data/san_mateo
