@@ -42,7 +42,8 @@ Stage::StageStatus ParkAndGoStageCruise::Process(
   CHECK_NOTNULL(frame);
 
   scenario_config_.CopyFrom(GetContext()->scenario_config);
-  // update static_obstacle_nudge_l_buffer
+
+  // TODO(SHU): add a static obstacle buffer
   // FLAGS_static_obstacle_nudge_l_buffer = 0.2;
 
   bool plan_ok = ExecuteTaskOnReferenceLine(planning_init_point, frame);
