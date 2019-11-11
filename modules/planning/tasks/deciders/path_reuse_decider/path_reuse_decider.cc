@@ -27,7 +27,7 @@
 
 namespace apollo {
 namespace planning {
-
+#define ADEBUG AINFO
 using apollo::common::Status;
 using apollo::common::math::Polygon2d;
 using apollo::common::math::Vec2d;
@@ -369,13 +369,14 @@ bool PathReuseDecider::TrimHistoryPath(
 
     trimmed_path.emplace_back(history_path[i]);
 
-    if (i < 50) {
-      ADEBUG << "path_point:[" << i << "]" << updated_s;
-      path_position_sl.s();
-      ADEBUG << std::setprecision(9) << "path_point:[" << i << "]"
-             << "x: [" << history_path[i].x() << "], y:[" << history_path[i].y()
-             << "]. s[" << history_path[i].s() << "]";
-    }
+    // if (i < 50) {
+    //   ADEBUG << "path_point:[" << i << "]" << updated_s;
+    //   path_position_sl.s();
+    //   ADEBUG << std::setprecision(9) << "path_point:[" << i << "]"
+    //          << "x: [" << history_path[i].x() << "], y:[" <<
+    //          history_path[i].y()
+    //          << "]. s[" << history_path[i].s() << "]";
+    // }
     trimmed_path.back().set_s(updated_s);
   }
 

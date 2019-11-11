@@ -24,7 +24,7 @@
 
 namespace apollo {
 namespace planning {
-
+#define ADEBUG AINFO
 using apollo::common::ErrorCode;
 using apollo::common::SLPoint;
 using apollo::common::Status;
