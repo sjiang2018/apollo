@@ -23,12 +23,13 @@ namespace apollo {
 namespace planning {
 namespace scenario {
 namespace park_and_go {
-
+static int count = 0;
 using apollo::common::EngageAdvice;
 using apollo::common::TrajectoryPoint;
 
 Stage::StageStatus ParkAndGoStageCheck::Process(
     const TrajectoryPoint& planning_init_point, Frame* frame) {
+  AINFO << "check count:" << ++count;
   ADEBUG << "stage: Check";
   CHECK_NOTNULL(frame);
 
@@ -53,7 +54,7 @@ Stage::StageStatus ParkAndGoStageCheck::Process(
 }
 
 Stage::StageStatus ParkAndGoStageCheck::FinishStage(const bool success) {
-  if (success) {
+  if (success && count == 10) {
     next_stage_ = ScenarioConfig::PARK_AND_GO_CRUISE;
   } else {
     next_stage_ = ScenarioConfig::PARK_AND_GO_ADJUST;
@@ -62,6 +63,7 @@ Stage::StageStatus ParkAndGoStageCheck::FinishStage(const bool success) {
       ->mutable_planning_status()
       ->mutable_park_and_go()
       ->set_in_check_stage(false);
+  count = 0;
   return Stage::FINISHED;
 }
 
