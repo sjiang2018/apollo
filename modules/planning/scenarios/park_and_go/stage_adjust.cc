@@ -47,7 +47,10 @@ Stage::StageStatus ParkAndGoStageAdjust::Process(
     AERROR << "ParkAndGoStageAdjust planning error";
     return StageStatus::ERROR;
   }
-  bool ready_to_cruise =
+  // frame->mutable_reference_line_info()
+  //     ->mutable_reference_line()
+  //     ->ADCTrajectory*
+  const bool ready_to_cruise =
       scenario::util::CheckADCReadyToCruise(frame, scenario_config_);
   if (ready_to_cruise) {
     return FinishStage();

@@ -34,6 +34,7 @@ namespace planning {
 namespace scenario {
 namespace park_and_go {
 
+using apollo::common::EngageAdvice;
 using apollo::common::TrajectoryPoint;
 
 Stage::StageStatus ParkAndGoStageCruise::Process(
@@ -43,6 +44,12 @@ Stage::StageStatus ParkAndGoStageCruise::Process(
 
   scenario_config_.CopyFrom(GetContext()->scenario_config);
 
+  // set engage advice
+  auto* prev_advice = PlanningContext::Instance()
+                          ->mutable_planning_status()
+                          ->mutable_engage_advice();
+  prev_advice->set_advice(EngageAdvice::READY_TO_ENGAGE);
+
   bool plan_ok = ExecuteTaskOnReferenceLine(planning_init_point, frame);
   if (!plan_ok) {
     AERROR << "ParkAndGoStageCruise planning error";
@@ -50,6 +57,7 @@ Stage::StageStatus ParkAndGoStageCruise::Process(
 
   const ReferenceLineInfo& reference_line_info =
       frame->reference_line_info().front();
+
   // check ADC status:
   // 1. At routing beginning: stage finished
   ParkAndGoStatus status =
