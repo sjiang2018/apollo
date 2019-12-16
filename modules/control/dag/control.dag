@@ -25,9 +25,10 @@ module_config {
     }
 
     components {
-        class_name : "MPCControllerSubmodule"
+        class_name : "LatLonControllerSubmodule"
         config {
-            name: "MPCControllerSubmodule"
+            name: "LatLonControllerSubmodule"
+            config_file_path: "/apollo/modules/control/conf/control_common_conf.pb.txt"
             flag_file_path: "/apollo/modules/control/conf/control.conf"
             readers: [
                 {
