@@ -412,13 +412,27 @@ void OpenSpaceRoiDecider::GetRoadBoundary(
         config_.open_space_roi_decider_config().roi_line_segment_min_angle();
     last_check_point_heading = check_point_heading;
 
-    ADEBUG << "is is_center_lane_heading_change: "
-           << is_center_lane_heading_change;
     // Check if the current center-lane checking-point is start point || end
     // point || or point with larger curvature. If yes, mark it as an anchor
     // point.
     bool is_anchor_point = check_point_s == start_s || check_point_s == end_s ||
                            is_center_lane_heading_change;
+
+    if (check_point_s == start_s) {
+      AWARN << "is start_s";
+      AWARN << "index: " << index;
+    }
+
+    if (check_point_s == end_s) {
+      AWARN << "is end_s";
+      AWARN << "index: " << index;
+    }
+
+    if (is_center_lane_heading_change) {
+      AWARN << "is_center_lane_heading_change";
+      AWARN << "index: " << index;
+    }
+
     // Add key points to the left-half boundary
     AddBoundaryKeyPoint(nearby_path, check_point_s, start_s, end_s,
                         is_anchor_point, true, center_lane_boundary_left,
@@ -433,15 +447,19 @@ void OpenSpaceRoiDecider::GetRoadBoundary(
       break;
     }
     index += 1.0;
+
     check_point_s =
         start_s +
         index *
             config_.open_space_roi_decider_config().roi_line_segment_length();
     check_point_s = check_point_s >= end_s ? end_s : check_point_s;
   }
+  AERROR << "check_point_s: (" << std::setprecision(9) << check_point_s << ")";
 
   size_t left_point_size = left_lane_boundary->size();
+  AWARN << "left_point_size: " << left_point_size;
   size_t right_point_size = right_lane_boundary->size();
+  AWARN << "right_point_size: " << left_point_size;
   for (size_t i = 0; i < left_point_size; i++) {
     left_lane_boundary->at(i) -= origin_point;
     left_lane_boundary->at(i).SelfRotate(-origin_heading);
@@ -495,6 +513,15 @@ void OpenSpaceRoiDecider::AddBoundaryKeyPoint(
   double current_road_width =
       is_left_curb ? nearby_path.GetRoadLeftWidth(check_point_s)
                    : nearby_path.GetRoadRightWidth(check_point_s);
+  // double previous_road_width =
+  //     is_left_curb ? nearby_path.GetRoadLeftWidth(previous_distance_s)
+  //                  : nearby_path.GetRoadRightWidth(previous_distance_s);
+
+  // AERROR << "current_road_width: (" << std::setprecision(9)
+  //        << current_road_width << "), "
+  //        << "current point is : (" << current_check_point.x() << ", "
+  //        << current_check_point.y() << ", " << current_check_point.heading()
+  //        << ")";
   // If the current center-lane checking point is an anchor point, then add
   // current left/right curb boundary point as a key point
   if (is_anchor_point) {
@@ -507,6 +534,13 @@ void OpenSpaceRoiDecider::AddBoundaryKeyPoint(
     Vec2d curb_lane_point = Vec2d(current_road_width * point_vec_cos,
                                   current_road_width * point_vec_sin);
     curb_lane_point = curb_lane_point + current_check_point;
+
+    if (!is_left_curb) {
+      AWARN << "right curb anchor point: (" << std::setprecision(9)
+            << curb_lane_point.x() << ", " << curb_lane_point.y() << ")"
+            << "heading: " << current_check_point_heading;
+    }
+
     center_lane_boundary->push_back(current_check_point);
     curb_lane_boundary->push_back(curb_lane_point);
     center_lane_s->push_back(check_point_s);
@@ -530,9 +564,17 @@ void OpenSpaceRoiDecider::AddBoundaryKeyPoint(
   // If the delta angle between the previous curb segment and the next curb
   // segment is large (near a curb corner), then add current curb_lane_point as
   // a key point.
+  // double road_width_diff = previous_road_width - current_road_width;
+  // TODO(SHU): 1. considering curvy road; 2. use both road boundary for
+  // single-track road
   if (std::abs(current_curb_point_delta_theta) >
       config_.open_space_roi_decider_config()
           .curb_heading_tangent_change_upper_limit()) {
+    AWARN << "current_road_width: (" << std::setprecision(9)
+          << current_road_width << "), "
+          << "current point is : (" << current_check_point.x() << ", "
+          << current_check_point.y() << ", " << current_check_point.heading()
+          << ")";
     double point_vec_cos =
         is_left_curb ? std::cos(current_check_point_heading + M_PI / 2.0)
                      : std::cos(current_check_point_heading - M_PI / 2.0);
@@ -546,6 +588,12 @@ void OpenSpaceRoiDecider::AddBoundaryKeyPoint(
     curb_lane_boundary->push_back(curb_lane_point);
     center_lane_s->push_back(check_point_s);
     road_width->push_back(current_road_width);
+
+    if (!is_left_curb) {
+      AWARN << "right curb anchor point: (" << std::setprecision(9)
+            << curb_lane_point.x() << ", " << curb_lane_point.y() << ")"
+            << "heading: " << current_check_point_heading;
+    }
   }
 }
 
@@ -997,6 +1045,9 @@ bool OpenSpaceRoiDecider::GetParkAndGoBoundary(
 
   size_t right_lane_boundary_last_index = right_lane_boundary.size() - 1;
   for (size_t i = 0; i < right_lane_boundary_last_index; i++) {
+    AWARN << "right_lane_boundary[" << i << "]: (" << std::setprecision(9)
+          << right_lane_boundary[i].x() << ", " << right_lane_boundary[i].y()
+          << ")";
     std::vector<Vec2d> segment{right_lane_boundary[i],
                                right_lane_boundary[i + 1]};
     roi_parking_boundary->push_back(segment);
@@ -1004,6 +1055,13 @@ bool OpenSpaceRoiDecider::GetParkAndGoBoundary(
 
   size_t left_lane_boundary_last_index = left_lane_boundary.size() - 1;
   for (size_t i = left_lane_boundary_last_index; i > 0; i--) {
+    AWARN << "left_lane_boundary[" << i << "]: (" << std::setprecision(9)
+          << left_lane_boundary[i].x() << ", " << left_lane_boundary[i].y()
+          << ")";
+    AWARN << "left_lane_boundary[" << i + 1 << "]: (" << std::setprecision(9)
+          << left_lane_boundary[i + 1].x() << ", "
+          << left_lane_boundary[i + 1].y() << ")";
+
     std::vector<Vec2d> segment{left_lane_boundary[i],
                                left_lane_boundary[i - 1]};
     roi_parking_boundary->push_back(segment);

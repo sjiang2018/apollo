@@ -810,60 +810,60 @@ void OnLanePlanning::AddOpenSpaceOptimizerResult(
     // Set chartJS's dataset properties
     auto* obstacle_properties = obstacle_outline->mutable_properties();
     (*obstacle_properties)["borderWidth"] = "2";
-    (*obstacle_properties)["pointRadius"] = "0";
+    (*obstacle_properties)["pointRadius"] = "4";
     (*obstacle_properties)["lineTension"] = "0";
     (*obstacle_properties)["fill"] = "false";
-    (*obstacle_properties)["showLine"] = "true";
+    (*obstacle_properties)["showLine"] = "false";
   }
 
-  auto smoothed_trajectory = open_space_debug.smoothed_trajectory();
-  auto* smoothed_line = chart->add_line();
-  smoothed_line->set_label("Smooth");
-  size_t adc_label = 0;
-  for (const auto& point : smoothed_trajectory.vehicle_motion_point()) {
-    const auto x = point.trajectory_point().path_point().x();
-    const auto y = point.trajectory_point().path_point().y();
-    const auto heading = point.trajectory_point().path_point().theta();
+  // auto smoothed_trajectory = open_space_debug.smoothed_trajectory();
+  // auto* smoothed_line = chart->add_line();
+  // smoothed_line->set_label("Smooth");
+  // size_t adc_label = 0;
+  // for (const auto& point : smoothed_trajectory.vehicle_motion_point()) {
+  //   const auto x = point.trajectory_point().path_point().x();
+  //   const auto y = point.trajectory_point().path_point().y();
+  //   const auto heading = point.trajectory_point().path_point().theta();
 
-    // Draw vehicle shape along the trajectory
-    auto* adc_shape = chart->add_car();
-    adc_shape->set_x(x);
-    adc_shape->set_y(y);
-    adc_shape->set_heading(heading);
-    adc_shape->set_color("rgba(54, 162, 235, 1)");
-    adc_shape->set_label(std::to_string(adc_label));
-    adc_shape->set_hide_label_in_legend(true);
-    ++adc_label;
+  //   // Draw vehicle shape along the trajectory
+  //   auto* adc_shape = chart->add_car();
+  //   adc_shape->set_x(x);
+  //   adc_shape->set_y(y);
+  //   adc_shape->set_heading(heading);
+  //   adc_shape->set_color("rgba(54, 162, 235, 1)");
+  //   adc_shape->set_label(std::to_string(adc_label));
+  //   adc_shape->set_hide_label_in_legend(true);
+  //   ++adc_label;
 
-    // Draw vehicle trajectory points
-    auto* point_debug = smoothed_line->add_point();
-    point_debug->set_x(x);
-    point_debug->set_y(y);
-  }
+  //   // Draw vehicle trajectory points
+  //   auto* point_debug = smoothed_line->add_point();
+  //   point_debug->set_x(x);
+  //   point_debug->set_y(y);
+  // }
 
-  // Set chartJS's dataset properties
-  auto* smoothed_properties = smoothed_line->mutable_properties();
-  (*smoothed_properties)["borderWidth"] = "2";
-  (*smoothed_properties)["pointRadius"] = "0";
-  (*smoothed_properties)["lineTension"] = "0";
-  (*smoothed_properties)["fill"] = "false";
-  (*smoothed_properties)["showLine"] = "true";
+  //    // Set chartJS's dataset properties
+  // auto* smoothed_properties = smoothed_line->mutable_properties();
+  // (*smoothed_properties)["borderWidth"] = "2";
+  // (*smoothed_properties)["pointRadius"] = "0";
+  // (*smoothed_properties)["lineTension"] = "0";
+  // (*smoothed_properties)["fill"] = "false";
+  // (*smoothed_properties)["showLine"] = "true";
 
-  auto warm_start_trajectory = open_space_debug.warm_start_trajectory();
-  auto* warm_start_line = chart->add_line();
-  warm_start_line->set_label("WarmStart");
-  for (const auto& point : warm_start_trajectory.vehicle_motion_point()) {
-    auto* point_debug = warm_start_line->add_point();
-    point_debug->set_x(point.trajectory_point().path_point().x());
-    point_debug->set_y(point.trajectory_point().path_point().y());
-  }
-  // Set chartJS's dataset properties
-  auto* warm_start_properties = warm_start_line->mutable_properties();
-  (*warm_start_properties)["borderWidth"] = "2";
-  (*warm_start_properties)["pointRadius"] = "0";
-  (*warm_start_properties)["lineTension"] = "0";
-  (*warm_start_properties)["fill"] = "false";
-  (*warm_start_properties)["showLine"] = "true";
+  // auto warm_start_trajectory = open_space_debug.warm_start_trajectory();
+  // auto* warm_start_line = chart->add_line();
+  // warm_start_line->set_label("WarmStart");
+  // for (const auto& point : warm_start_trajectory.vehicle_motion_point()) {
+  //   auto* point_debug = warm_start_line->add_point();
+  //   point_debug->set_x(point.trajectory_point().path_point().x());
+  //   point_debug->set_y(point.trajectory_point().path_point().y());
+  // }
+  // // Set chartJS's dataset properties
+  // auto* warm_start_properties = warm_start_line->mutable_properties();
+  // (*warm_start_properties)["borderWidth"] = "2";
+  // (*warm_start_properties)["pointRadius"] = "0";
+  // (*warm_start_properties)["lineTension"] = "0";
+  // (*warm_start_properties)["fill"] = "false";
+  // (*warm_start_properties)["showLine"] = "true";
 }
 
 void OnLanePlanning::AddPartitionedTrajectory(
