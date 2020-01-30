@@ -320,11 +320,20 @@ bool ControlComponent::Proc() {
   }
 
   ControlCommand control_command;
-
+  const auto start_system_timestamp =
+      std::chrono::duration<double>(
+          std::chrono::system_clock::now().time_since_epoch())
+          .count();
   Status status = ProduceControlCommand(&control_command);
   AERROR_IF(!status.ok()) << "Failed to produce control command:"
                           << status.error_message();
-
+  const auto end_system_timestamp =
+      std::chrono::duration<double>(
+          std::chrono::system_clock::now().time_since_epoch())
+          .count();
+  const double timestamp_diff_ms =
+      (end_system_timestamp - start_system_timestamp) * 1000;
+  AWARN << "control cycle time is: " << timestamp_diff_ms << " ms.";
   double end_timestamp = Clock::NowInSeconds();
 
   if (pad_received_) {
