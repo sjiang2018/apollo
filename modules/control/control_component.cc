@@ -276,7 +276,7 @@ Status ControlComponent::ProduceControlCommand(
 }
 
 bool ControlComponent::Proc() {
-  const auto start_time =
+  const auto start_time_pre =
       FLAGS_use_system_time_in_control ? absl::Now() : Clock::Now();
 
   chassis_reader_->Observe();
@@ -337,7 +337,7 @@ bool ControlComponent::Proc() {
     static apollo::common::LatencyRecorder latency_recorder(
         FLAGS_control_local_view_topic);
     latency_recorder.AppendLatencyRecord(
-        local_view_.trajectory().header().lidar_timestamp(), start_time,
+        local_view_.trajectory().header().lidar_timestamp(), start_time_pre,
         end_time);
 
     local_view_writer_->Write(local_view_);
@@ -356,17 +356,28 @@ bool ControlComponent::Proc() {
 
   if (control_conf_.is_control_test_mode() &&
       control_conf_.control_test_duration() > 0 &&
-      absl::ToDoubleSeconds(start_time - init_time_) >
+      absl::ToDoubleSeconds(start_time_pre - init_time_) >
           control_conf_.control_test_duration()) {
     AERROR << "Control finished testing. exit";
     return false;
   }
 
   ControlCommand control_command;
+  const auto start_time =
+      std::chrono::duration<double>(
+          std::chrono::system_clock::now().time_since_epoch())
+          .count();
 
   Status status = ProduceControlCommand(&control_command);
+
   AERROR_IF(!status.ok()) << "Failed to produce control command:"
                           << status.error_message();
+
+  const auto end_time = std::chrono::duration<double>(
+                            std::chrono::system_clock::now().time_since_epoch())
+                            .count();
+  const double time_diff_ms = (end_time - start_time) * 1000;
+  // AWARN << "total control time spend: " << time_diff_ms << " ms.";
 
   if (pad_received_) {
     control_command.mutable_pad_msg()->CopyFrom(pad_msg_);
@@ -394,9 +405,10 @@ bool ControlComponent::Proc() {
     return true;
   }
 
-  const auto end_time =
+  const auto end_time_last =
       FLAGS_use_system_time_in_control ? absl::Now() : Clock::Now();
-  const double time_diff_ms = absl::ToDoubleMilliseconds(end_time - start_time);
+  // const double time_diff_ms = absl::ToDoubleMilliseconds(end_time -
+  // start_time);
   ADEBUG << "total control time spend: " << time_diff_ms << " ms.";
 
   control_command.mutable_latency_stats()->set_total_time_ms(time_diff_ms);
@@ -411,8 +423,8 @@ bool ControlComponent::Proc() {
     static apollo::common::LatencyRecorder latency_recorder(
         FLAGS_control_command_topic);
     latency_recorder.AppendLatencyRecord(
-        local_view_.trajectory().header().lidar_timestamp(), start_time,
-        end_time);
+        local_view_.trajectory().header().lidar_timestamp(), start_time_pre,
+        end_time_last);
   }
 
   control_cmd_writer_->Write(control_command);
