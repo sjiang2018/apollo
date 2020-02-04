@@ -60,6 +60,7 @@ Status PathBoundsDecider::Process(
 
   // Skip the path boundary decision if reusing the path.
   if (FLAGS_enable_skip_path_tasks && reference_line_info->path_reusable()) {
+    //AWARN << "skipping path bound decider";
     return Status::OK();
   }
 
