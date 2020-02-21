@@ -818,6 +818,8 @@ void OnLanePlanning::AddOpenSpaceOptimizerResult(
     (*obstacle_properties)["showLine"] = "true";
   }
 
+  AWARN << "BDR numbers: " << obstacle_index - 1;
+
   auto smoothed_trajectory = open_space_debug.smoothed_trajectory();
   auto* smoothed_line = chart->add_line();
   smoothed_line->set_label("Smooth");
