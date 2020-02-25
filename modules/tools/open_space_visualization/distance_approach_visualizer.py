@@ -159,10 +159,10 @@ def SmoothTrajectory(visualize_flag, sx, sy):
             lefty = 1.043 * math.sin(phi_out[i] - math.pi)
             x_shift_leftbottom = x_out[i] + downx + leftx
             y_shift_leftbottom = y_out[i] + downy + lefty
-            warm_start_car = patches.Rectangle((x_shift_leftbottom, y_shift_leftbottom), 3.89 + 1.043, 1.055*2,
+            warm_start_car = patches.Rectangle((x_shift_leftbottom, y_shift_leftbottom), 3.89 + 1.043, 1.055 * 2,
                                                angle=phi_out[i] * 180 / math.pi, linewidth=1, edgecolor='r', facecolor='none')
             warm_start_arrow = patches.Arrow(
-                x_out[i], y_out[i], 0.25*math.cos(phi_out[i]), 0.25*math.sin(phi_out[i]), 0.2, edgecolor='r',)
+                x_out[i], y_out[i], 0.25 * math.cos(phi_out[i]), 0.25 * math.sin(phi_out[i]), 0.2, edgecolor='r',)
             # ax.add_patch(warm_start_car)
             ax.add_patch(warm_start_arrow)
             # distance approach
@@ -172,10 +172,10 @@ def SmoothTrajectory(visualize_flag, sx, sy):
             lefty = 1.043 * math.sin(opt_phi_out[i] - math.pi)
             x_shift_leftbottom = opt_x_out[i] + downx + leftx
             y_shift_leftbottom = opt_y_out[i] + downy + lefty
-            smoothing_car = patches.Rectangle((x_shift_leftbottom, y_shift_leftbottom), 3.89 + 1.043, 1.055*2,
+            smoothing_car = patches.Rectangle((x_shift_leftbottom, y_shift_leftbottom), 3.89 + 1.043, 1.055 * 2,
                                               angle=opt_phi_out[i] * 180 / math.pi, linewidth=1, edgecolor='y', facecolor='none')
             smoothing_arrow = patches.Arrow(
-                opt_x_out[i], opt_y_out[i], 0.25*math.cos(opt_phi_out[i]), 0.25*math.sin(opt_phi_out[i]), 0.2, edgecolor='y',)
+                opt_x_out[i], opt_y_out[i], 0.25 * math.cos(opt_phi_out[i]), 0.25 * math.sin(opt_phi_out[i]), 0.2, edgecolor='y',)
             ax.add_patch(smoothing_car)
             ax.add_patch(smoothing_arrow)
 
@@ -263,17 +263,23 @@ if __name__ == '__main__':
 
     test_count = 0
     success_count = 0
+
     for sx in np.arange(-10, 10, 1.0):
         for sy in np.arange(2, 4, 0.5):
             print("sx is " + str(sx) + " and sy is " + str(sy))
             test_count += 1
             result = SmoothTrajectory(visualize_flag, sx, sy)
-            if result[0]:
+            if result[0]:  # success cases only
                 success_count += 1
                 planning_time_stats.append(result[-1])
                 ipopt_time_stats.append(result[-2][0])
                 dual_time_stats.append(result[-3][0])
                 hybrid_time_stats.append(result[-4][0])
+
+    print("test count: " + str(test_count))
+    print("successful case count: " + str(success_count))
+    print("len of planning_time_stats: " + str(len(planning_time_stats)))
+    print("len of ipopt_time_stats: " + str(len(ipopt_time_stats)))
 
     print("success rate is " + str(float(success_count) / float(test_count)))
     print("min is " + str(min(planning_time_stats)))
@@ -283,7 +289,7 @@ if __name__ == '__main__':
     module_timing = np.asarray([hybrid_time_stats, dual_time_stats, ipopt_time_stats])
     np.savetxt(result_file, module_timing, delimiter=",")
 
-    print("average hybird time: %4.4f, with max: %4.4f, min: %4.4f" % (
+    print("average hybrid time: %4.4f, with max: %4.4f, min: %4.4f" % (
         sum(hybrid_time_stats) / len(hybrid_time_stats), max(hybrid_time_stats),
         min(hybrid_time_stats)))
     print("average dual time: %4.4f, with max: %4.4f, min: %4.4f" % (
