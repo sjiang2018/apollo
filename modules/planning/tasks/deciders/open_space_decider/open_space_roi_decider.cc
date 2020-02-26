@@ -731,11 +731,25 @@ bool OpenSpaceRoiDecider::GetParkingBoundary(
   // right_lane_boundary.
   std::vector<double> right_lane_road_width;
 
-  GetRoadBoundary(nearby_path, center_line_s, origin_point, origin_heading,
-                  &left_lane_boundary, &right_lane_boundary,
-                  &center_lane_boundary_left, &center_lane_boundary_right,
-                  &center_lane_s_left, &center_lane_s_right,
-                  &left_lane_road_width, &right_lane_road_width);
+  // GetRoadBoundary(nearby_path, center_line_s, origin_point, origin_heading,
+  //                 &left_lane_boundary, &right_lane_boundary,
+  //                 &center_lane_boundary_left, &center_lane_boundary_right,
+  //                 &center_lane_s_left, &center_lane_s_right,
+  //                 &left_lane_road_width, &right_lane_road_width);
+
+  if (FLAGS_use_road_boundary_from_map) {
+    GetRoadBoundaryFromMap(
+        nearby_path, center_line_s, origin_point, origin_heading,
+        &left_lane_boundary, &right_lane_boundary, &center_lane_boundary_left,
+        &center_lane_boundary_right, &center_lane_s_left, &center_lane_s_right,
+        &left_lane_road_width, &right_lane_road_width);
+  } else {
+    GetRoadBoundary(nearby_path, center_line_s, origin_point, origin_heading,
+                    &left_lane_boundary, &right_lane_boundary,
+                    &center_lane_boundary_left, &center_lane_boundary_right,
+                    &center_lane_s_left, &center_lane_s_right,
+                    &left_lane_road_width, &right_lane_road_width);
+  }
 
   // If smaller than zero, the parking spot is on the right of the lane
   // Left, right, down or opposite of the boundary is decided when viewing the
@@ -997,11 +1011,19 @@ bool OpenSpaceRoiDecider::GetPullOverBoundary(
   std::vector<double> left_lane_road_width;
   std::vector<double> right_lane_road_width;
 
-  GetRoadBoundary(nearby_path, center_line_s, origin_point, origin_heading,
-                  &left_lane_boundary, &right_lane_boundary,
-                  &center_lane_boundary_left, &center_lane_boundary_right,
-                  &center_lane_s_left, &center_lane_s_right,
-                  &left_lane_road_width, &right_lane_road_width);
+  if (FLAGS_use_road_boundary_from_map) {
+    GetRoadBoundaryFromMap(
+        nearby_path, center_line_s, origin_point, origin_heading,
+        &left_lane_boundary, &right_lane_boundary, &center_lane_boundary_left,
+        &center_lane_boundary_right, &center_lane_s_left, &center_lane_s_right,
+        &left_lane_road_width, &right_lane_road_width);
+  } else {
+    GetRoadBoundary(nearby_path, center_line_s, origin_point, origin_heading,
+                    &left_lane_boundary, &right_lane_boundary,
+                    &center_lane_boundary_left, &center_lane_boundary_right,
+                    &center_lane_s_left, &center_lane_s_right,
+                    &left_lane_road_width, &right_lane_road_width);
+  }
 
   // Load boundary as line segments in counter-clockwise order
   std::reverse(left_lane_boundary.begin(), left_lane_boundary.end());
