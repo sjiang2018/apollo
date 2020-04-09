@@ -316,7 +316,7 @@ class OpenSpaceInfo {
 
   double open_space_pre_stop_fence_s_ = 0.0;
 
-  bool pre_stop_rightaway_flag_ = false;
+  bool pre_stop_rightaway_flag_ = true;
 
   hdmap::MapPathPoint pre_stop_rightaway_point_;
 

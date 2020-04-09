@@ -37,10 +37,6 @@ class StageParking : public Stage {
   Stage::StageStatus Process(const common::TrajectoryPoint& planning_init_point,
                              Frame* frame) override;
 
-  ValetParkingContext* GetContext() {
-    return GetContextAs<ValetParkingContext>();
-  }
-
  private:
   Stage::StageStatus FinishStage();
 

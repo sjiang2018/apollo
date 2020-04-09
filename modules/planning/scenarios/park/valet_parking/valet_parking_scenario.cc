@@ -78,9 +78,6 @@ std::unique_ptr<Stage> ValetParkingScenario::CreateStage(
   }
   auto ptr = s_stage_factory_.CreateObjectOrNull(stage_config.stage_type(),
                                                  stage_config);
-  if (ptr) {
-    ptr->SetContext(&context_);
-  }
   return ptr;
 }
 
@@ -89,7 +86,6 @@ bool ValetParkingScenario::GetScenarioConfig() {
     AERROR << "miss scenario specific config";
     return false;
   }
-  context_.scenario_config.CopyFrom(config_.valet_parking_config());
   return true;
 }
 
@@ -107,7 +103,7 @@ bool ValetParkingScenario::IsTransferable(const Frame& frame,
                                  .parking_info()
                                  .parking_space_id();
   } else {
-    ADEBUG << "No parking space id from routing";
+    AWARN << "No parking space id from routing";
     return false;
   }
 

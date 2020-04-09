@@ -34,13 +34,6 @@ namespace planning {
 namespace scenario {
 namespace valet_parking {
 
-struct ValetParkingContext {
-  ScenarioValetParkingConfig scenario_config;
-  std::string target_parking_spot_id;
-  bool pre_stop_rightaway_flag = false;
-  hdmap::MapPathPoint pre_stop_rightaway_point;
-};
-
 class ValetParkingScenario : public Scenario {
  public:
   ValetParkingScenario(const ScenarioConfig& config,
@@ -54,8 +47,6 @@ class ValetParkingScenario : public Scenario {
 
   static bool IsTransferable(const Frame& frame,
                              const double parking_start_range);
-
-  ValetParkingContext* GetContext() { return &context_; }
 
  private:
   static void RegisterStages();
@@ -74,7 +65,6 @@ class ValetParkingScenario : public Scenario {
       ScenarioConfig::StageType, Stage,
       Stage* (*)(const ScenarioConfig::StageConfig& stage_config)>
       s_stage_factory_;
-  ValetParkingContext context_;
   const hdmap::HDMap* hdmap_ = nullptr;
 };
 

@@ -93,7 +93,7 @@ std::unique_ptr<Scenario> ScenarioManager::CreateScenario(
     case ScenarioConfig::TEST_LEARNING_MODEL:
       ptr.reset(new scenario::TestLearningModelScenario(
           config_map_[scenario_type], &scenario_context_));
-    break;
+      break;
     case ScenarioConfig::TRAFFIC_LIGHT_PROTECTED:
       ptr.reset(new scenario::traffic_light::TrafficLightProtectedScenario(
           config_map_[scenario_type], &scenario_context_));
@@ -159,9 +159,9 @@ void ScenarioManager::RegisterScenarios() {
       &config_map_[ScenarioConfig::STOP_SIGN_UNPROTECTED]));
 
   // learning model
-  ACHECK(Scenario::LoadConfig(
-      FLAGS_scenario_test_learning_model_config_file,
-      &config_map_[ScenarioConfig::TEST_LEARNING_MODEL]));
+  ACHECK(
+      Scenario::LoadConfig(FLAGS_scenario_test_learning_model_config_file,
+                           &config_map_[ScenarioConfig::TEST_LEARNING_MODEL]));
 
   // traffic_light
   ACHECK(Scenario::LoadConfig(
@@ -712,6 +712,8 @@ ScenarioConfig::ScenarioType ScenarioManager::SelectValetParkingScenario(
   // TODO(All) trigger valet parking by route message definition as of now
   double parking_spot_range_to_start =
       scenario_config.parking_spot_range_to_start();
+  AWARN << scenario::valet_parking::ValetParkingScenario::IsTransferable(
+      frame, parking_spot_range_to_start);
   if (scenario::valet_parking::ValetParkingScenario::IsTransferable(
           frame, parking_spot_range_to_start)) {
     return ScenarioConfig::VALET_PARKING;

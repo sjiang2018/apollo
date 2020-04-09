@@ -152,13 +152,20 @@ void OpenSpacePreStopDecider::SetParkingSpotStopFence(
   double static_linear_velocity_epsilon = 1.0e-2;
   CHECK_GE(stop_distance_to_target, 1.0e-8);
   double target_vehicle_offset = target_s - adc_front_edge_s;
+
+  AWARN << "target_vehicle_offset : " << target_vehicle_offset;
+  AWARN << "stop_distance_to_target : " << stop_distance_to_target;
+  AWARN << "stop rightway : "
+        << frame->open_space_info().pre_stop_rightaway_flag();
+  AWARN << "current velocity" << std::abs(vehicle_state.linear_velocity());
+
   if (target_vehicle_offset > stop_distance_to_target) {
     stop_line_s = target_s - stop_distance_to_target;
   } else if (std::abs(target_vehicle_offset) < stop_distance_to_target) {
     stop_line_s = target_s + stop_distance_to_target;
   } else if (target_vehicle_offset < -stop_distance_to_target) {
     if (!frame->open_space_info().pre_stop_rightaway_flag()) {
-      // TODO(Jinyun) Use constant comfortable deacceleration rather than
+      // TODO(Jinyun) Use constant comfortable deceleration rather than
       // distance by config to set stop fence
       stop_line_s =
           adc_front_edge_s +

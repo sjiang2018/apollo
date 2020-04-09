@@ -38,10 +38,6 @@ class StageApproachingParkingSpot : public Stage {
   Stage::StageStatus Process(const common::TrajectoryPoint& planning_init_point,
                              Frame* frame) override;
 
-  ValetParkingContext* GetContext() {
-    return GetContextAs<ValetParkingContext>();
-  }
-
   bool CheckADCStop(const Frame& frame);
 
  private:
