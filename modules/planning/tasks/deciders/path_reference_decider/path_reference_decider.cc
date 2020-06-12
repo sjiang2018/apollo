@@ -28,6 +28,7 @@
 #include "modules/common/math/line_segment2d.h"
 #include "modules/planning/common/path_boundary.h"
 #include "modules/planning/common/planning_context.h"
+#include "modules/planning/common/trajectory/discretized_trajectory.h"
 #include "modules/planning/proto/planning_config.pb.h"
 #include "modules/planning/tasks/task.h"
 
@@ -68,6 +69,7 @@ Status PathReferenceDecider::Process(
   if (IsValidPathReference(path_reference, path_boundaries)) {
     // mark learning trajectory as path reference
     frame->set_learning_trajectory_valid(true);
+    ADEBUG << "valid learning trajectory";
   }
 
   return Status::OK();
@@ -173,6 +175,25 @@ void PathReferenceDecider::PathBoundToLineSegments(
   }
   path_bound_segments.emplace_back(cur_left_bound_segments);
   path_bound_segments.emplace_back(cur_right_bound_segments);
+}
+
+void PathReferenceDecider::EvaluatePathReference(
+    const PathBoundary *path_bound,
+    const std::vector<TrajectoryPoint> &path_reference,
+    std::vector<TrajectoryPoint> *evaluated_path_reference) {
+  const double start_s = path_bound->start_s();
+  const double delta_s = path_bound->delta_s();
+  const double path_reference_end_s = path_reference.back().path_point().s();
+  DiscretizedTrajectory discrete_path_reference(path_reference);
+  // loop over path bounds
+  for (size_t idx = 0; idx < path_bound->boundary().size(); ++idx) {
+    double cur_s = start_s + idx * delta_s;
+    if (cur_s > path_reference_end_s) {
+      break;
+    }
+    evaluated_path_reference->emplace_back(
+        discrete_path_reference.Evaluate(cur_s));
+  }
 }
 
 }  // namespace planning
