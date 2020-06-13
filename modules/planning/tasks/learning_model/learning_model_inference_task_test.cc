@@ -33,7 +33,7 @@ class LearningModelInferenceTaskTest : public ::testing::Test {
     auto* inference_config =
         config_.mutable_learning_model_inference_task_config();
     inference_config->set_model_file(
-        "/apollo/modules/planning/data/model/test_model_conv_rnn.pt");
+        "/apollo/modules/planning/data/model/test_model_cnn.pt");
     inference_config->set_use_cuda(true);
   }
 
