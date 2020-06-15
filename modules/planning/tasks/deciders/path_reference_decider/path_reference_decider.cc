@@ -87,8 +87,11 @@ Status PathReferenceDecider::Process(Frame *frame,
 
   // mark learning trajectory as path reference
   frame->set_learning_trajectory_valid(true);
+
   reference_line_info->mutable_path_data()->set_trimmed_path_bound_size(
       trimmed_path_bound_size_);
+
+  reference_line_info->mutable_path_data()->set_valid_path_reference(true);
 
   // write path reference end pose to PathData
   common::PointENU path_reference_end_pos;
