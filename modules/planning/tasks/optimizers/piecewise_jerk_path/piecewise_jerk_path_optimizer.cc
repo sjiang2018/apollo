@@ -147,11 +147,14 @@ common::Status PiecewiseJerkPathOptimizer::Process(
       double kappa = reference_line.GetNearestReferencePoint(s).kappa();
       ddl_bounds.emplace_back(-lat_acc_bound - kappa, lat_acc_bound - kappa);
     }
+    std::vector<std::pair<double, double>> trimmed_path_boundary(
+        path_boundary.boundary().begin(),
+        path_boundary.boundary().begin() + path_boundary_size);
 
     bool res_opt =
         OptimizePath(init_frenet_state.second, end_state,
-                     path_boundary.delta_s(), path_boundary.boundary(),
-                     ddl_bounds, w, &opt_l, &opt_dl, &opt_ddl, max_iter);
+                     path_boundary.delta_s(), trimmed_path_boundary, ddl_bounds,
+                     w, &opt_l, &opt_dl, &opt_ddl, max_iter);
 
     if (res_opt) {
       for (size_t i = 0; i < path_boundary_size; i += 4) {
