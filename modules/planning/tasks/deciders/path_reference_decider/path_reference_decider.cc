@@ -77,7 +77,7 @@ Status PathReferenceDecider::Process(Frame *frame,
   if (!IsValidPathReference(reference_line_info,
                             path_boundaries[regular_path_bound_idx],
                             path_reference)) {
-    AINFO << "Learning model output violates path bounds. Not a validated "
+    ADEBUG << "Learning model output violates path bounds. Not a validated "
               "path reference";
     return Status::OK();
   }
@@ -88,7 +88,7 @@ Status PathReferenceDecider::Process(Frame *frame,
   ADEBUG << "trimmed_path_bound_size: " << trimmed_path_bound_size_;
   if (trimmed_path_bound_size_ <
       config_.path_reference_decider_config().min_path_reference_length()) {
-    AINFO
+    ADEBUG
         << "Learning model output is too shot. Not a validated path reference";
     return Status::OK();
   }
