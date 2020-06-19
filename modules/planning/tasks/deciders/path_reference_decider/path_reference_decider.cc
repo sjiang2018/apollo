@@ -55,6 +55,11 @@ Status PathReferenceDecider::Execute(Frame *frame,
 
 Status PathReferenceDecider::Process(Frame *frame,
                                      ReferenceLineInfo *reference_line_info) {
+  // skip using path reference during lane changing
+  if (reference_line_info->size() > 1) {
+    ADEBUG << "Skip path reference when changing lane.";
+    return Status::OK();
+  }
   // get path bounds info from reference line info
   const std::vector<PathBoundary> &path_boundaries =
       reference_line_info_->GetCandidatePathBoundaries();
