@@ -149,13 +149,6 @@ class Frame {
 
   const bool is_near_destination() const { return is_near_destination_; }
 
-  const bool is_valid_learning_trajectory() const {
-    return is_valid_learning_trajectory_;
-  }
-  void set_learning_trajectory_valid(bool is_valid) {
-    is_valid_learning_trajectory_ = is_valid;
-  }
-
   /**
    * @brief Adjust reference line priority according to actual road conditions
    * @id_to_priority lane id and reference line priority mapping relationship
@@ -257,7 +250,6 @@ class Frame {
   LearningDataFrame learning_data_frame_;
   std::vector<common::TrajectoryPoint>
       learning_data_adc_future_trajectory_points_;
-  bool is_valid_learning_trajectory_ = false;
 };
 
 class FrameHistory : public IndexedQueue<uint32_t, Frame> {

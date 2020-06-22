@@ -139,11 +139,6 @@ common::Status PiecewiseJerkPathOptimizer::Process(
                               &path_reference_sl);
         path_reference_l[i] = path_reference_sl.l();
       }
-      // updated end state
-      //   end_state[0] = path_reference_l.back();
-
-      // trim path bounds
-      //   path_boundary_size = path_data.trimmed_path_bound_size();
     }
 
     const auto& veh_param =
@@ -158,10 +153,6 @@ common::Status PiecewiseJerkPathOptimizer::Process(
       double kappa = reference_line.GetNearestReferencePoint(s).kappa();
       ddl_bounds.emplace_back(-lat_acc_bound - kappa, lat_acc_bound - kappa);
     }
-
-    // std::vector<std::pair<double, double>> trimmed_path_boundary(
-    //     path_boundary.boundary().begin(),
-    //     path_boundary.boundary().begin() + path_boundary_size);
 
     bool res_opt =
         OptimizePath(init_frenet_state.second, end_state, path_reference_l,
@@ -264,7 +255,7 @@ bool PiecewiseJerkPathOptimizer::OptimizePath(
   if (is_valid_path_reference) {
     std::vector<double> x_ref = std::move(path_reference_l_ref);
     for (size_t i = 0; i < 10; ++i) {
-      AWARN << path_reference_l_ref.at(i);
+      ADEBUG << path_reference_l_ref.at(i);
     }
 
     const double weight_x_ref = 10.0;
