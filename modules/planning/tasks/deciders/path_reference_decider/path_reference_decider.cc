@@ -56,7 +56,8 @@ Status PathReferenceDecider::Execute(Frame *frame,
 Status PathReferenceDecider::Process(Frame *frame,
                                      ReferenceLineInfo *reference_line_info) {
   // skip using path reference during lane changing
-  if (reference_line_info->size() > 1) {
+  // There are two reference line during change lane
+  if (frame->reference_line_info().size() > 1) {
     ADEBUG << "Skip path reference when changing lane.";
     return Status::OK();
   }
@@ -100,19 +101,10 @@ Status PathReferenceDecider::Process(Frame *frame,
   // mark learning trajectory as path reference
   frame->set_learning_trajectory_valid(true);
 
-  reference_line_info->mutable_path_data()->set_trimmed_path_bound_size(
-      trimmed_path_bound_size_);
-
   reference_line_info->mutable_path_data()->set_valid_path_reference(true);
 
-  // write path reference end pose to PathData
-  common::PointENU path_reference_end_pos;
-  path_reference_end_pos.set_x(
-      evaluated_path_reference.at(trimmed_path_bound_size_ - 1).x());
-  path_reference_end_pos.set_y(
-      evaluated_path_reference.at(trimmed_path_bound_size_ - 1).y());
-  reference_line_info->mutable_path_data()->set_path_reference_end_pose(
-      path_reference_end_pos);
+  reference_line_info->mutable_path_data()->set_path_reference(
+      evaluated_path_reference);
 
   return Status::OK();
 }
