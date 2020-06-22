@@ -33,6 +33,7 @@
 namespace apollo {
 namespace planning {
 
+using apollo::common::PathPoint;
 using apollo::common::PointENU;
 using apollo::common::SLPoint;
 using apollo::common::math::CartesianFrenetConverter;
@@ -159,6 +160,7 @@ void PathData::Clear() {
   discretized_path_.clear();
   frenet_path_.clear();
   path_point_decision_guide_.clear();
+  path_reference_.clear();
   reference_line_ = nullptr;
 }
 
@@ -275,6 +277,15 @@ void PathData::set_trimmed_path_bound_size(
 void PathData::set_path_reference_end_pose(
     const PointENU &path_reference_end_pose) {
   path_reference_end_pos_ = path_reference_end_pose;
+}
+
+const std::vector<PathPoint> &PathData::path_reference() const {
+  return path_reference_;
+}
+
+void PathData::set_path_reference(
+    const std::vector<PathPoint> &path_reference) {
+  path_reference_ = std::move(path_reference);
 }
 
 }  // namespace planning
