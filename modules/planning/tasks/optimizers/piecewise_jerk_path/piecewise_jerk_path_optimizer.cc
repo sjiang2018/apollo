@@ -236,8 +236,10 @@ bool PiecewiseJerkPathOptimizer::OptimizePath(
     const std::vector<std::pair<double, double>>& ddl_bounds,
     const std::array<double, 5>& w, std::vector<double>* x,
     std::vector<double>* dx, std::vector<double>* ddx, const int max_iter) {
-  PiecewiseJerkPathProblem piecewise_jerk_problem(lat_boundaries.size(),
-                                                  delta_s, init_state);
+  // num of knots
+  const int kNumKnots = lat_boundaries.size();
+  PiecewiseJerkPathProblem piecewise_jerk_problem(kNumKnots, delta_s,
+                                                  init_state);
 
   // TODO(Hongyi): update end_state settings
   piecewise_jerk_problem.set_end_state_ref({1000.0, 0.0, 0.0}, end_state);
@@ -256,13 +258,18 @@ bool PiecewiseJerkPathOptimizer::OptimizePath(
   }
   // use path reference as a optimization cost function
   if (is_valid_path_reference) {
+    // for non-path-reference part
+    // weight_x_ref is set to default value, where
+    // l weight = weight_x_ + weight_x_ref_ = (1.0 + 0.0)
+    std::vector<double> weight_x_ref_vec(kNumKnots, 0.0);
     std::vector<double> x_ref = std::move(path_reference_l_ref);
-    for (size_t i = 0; i < 10; ++i) {
+    // increase l weight for path reference part only
+    constexpr double weight_x_ref_path_reference = 1000.0;
+    for (size_t i = 0; i < path_reference_l_ref.size(); ++i) {
       ADEBUG << path_reference_l_ref.at(i);
+      weight_x_ref_vec.at(i) = weight_x_ref_path_reference;
     }
-
-    const double weight_x_ref = 10.0;
-    piecewise_jerk_problem.set_x_ref(weight_x_ref, x_ref);
+    piecewise_jerk_problem.set_x_ref(weight_x_ref_vec, x_ref);
   }
 
   piecewise_jerk_problem.set_weight_x(w[0]);
