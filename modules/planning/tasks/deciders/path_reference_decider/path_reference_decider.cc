@@ -65,8 +65,8 @@ Status PathReferenceDecider::Process(Frame *frame,
     reference_line_info->mutable_path_data()->set_is_valid_path_reference(
         false);
     ADEBUG << "Skip path reference when changing lane.";
-    ADEBUG << "valid_path_reference_counter[" << valid_path_reference_counter_
-           << "] total_path_counter[" << total_path_counter_ << "]";
+    AWARN << "valid_path_reference_counter[" << valid_path_reference_counter_
+          << "] total_path_counter[" << total_path_counter_ << "]";
     return Status::OK();
   }
 
@@ -76,8 +76,8 @@ Status PathReferenceDecider::Process(Frame *frame,
     reference_line_info->mutable_path_data()->set_is_valid_path_reference(
         false);
     ADEBUG << "Skip path reference when sidepass.";
-    ADEBUG << "valid_path_reference_counter[" << valid_path_reference_counter_
-           << "] total_path_counter[" << total_path_counter_ << "]";
+    AWARN << "valid_path_reference_counter[" << valid_path_reference_counter_
+          << "] total_path_counter[" << total_path_counter_ << "]";
     return Status::OK();
   }
 
@@ -98,8 +98,8 @@ Status PathReferenceDecider::Process(Frame *frame,
         false);
     const std::string msg = "No regular path boundary";
     AERROR << msg;
-    ADEBUG << "valid_path_reference_counter[" << valid_path_reference_counter_
-           << "] total_path_counter[" << total_path_counter_ << "]";
+    AWARN << "valid_path_reference_counter[" << valid_path_reference_counter_
+          << "] total_path_counter[" << total_path_counter_ << "]";
     return Status(ErrorCode::PLANNING_ERROR, msg);
   }
 
@@ -113,8 +113,8 @@ Status PathReferenceDecider::Process(Frame *frame,
         false);
     ADEBUG << "Learning model output violates path bounds. Not a validated "
               "path reference";
-    ADEBUG << "valid_path_reference_counter[" << valid_path_reference_counter_
-           << "] total_path_counter[" << total_path_counter_ << "]";
+    AWARN << "valid_path_reference_counter[" << valid_path_reference_counter_
+          << "] total_path_counter[" << total_path_counter_ << "]";
     return Status::OK();
   }
 
@@ -130,8 +130,8 @@ Status PathReferenceDecider::Process(Frame *frame,
       evaluated_path_reference);
 
   ++valid_path_reference_counter_;
-  ADEBUG << "valid_path_reference_counter[" << valid_path_reference_counter_
-         << "] total_path_counter[" << total_path_counter_ << "]";
+  AWARN << "valid_path_reference_counter[" << valid_path_reference_counter_
+        << "] total_path_counter[" << total_path_counter_ << "]";
 
   return Status::OK();
 }
