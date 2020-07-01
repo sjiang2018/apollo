@@ -230,7 +230,7 @@ PiecewiseJerkPathOptimizer::ConvertPathPointRefFromFrontAxeToRearAxe(
 bool PiecewiseJerkPathOptimizer::OptimizePath(
     const std::array<double, 3>& init_state,
     const std::array<double, 3>& end_state,
-    const std::vector<double>& path_reference_l_ref,
+    std::vector<double> path_reference_l_ref,
     const size_t path_reference_size, const double delta_s,
     const bool is_valid_path_reference,
     const std::vector<std::pair<double, double>>& lat_boundaries,
@@ -255,7 +255,7 @@ bool PiecewiseJerkPathOptimizer::OptimizePath(
                                      .pull_over_type();
     const double weight_x_ref =
         pull_over_type == PullOverStatus::EMERGENCY_PULL_OVER ? 200.0 : 10.0;
-    piecewise_jerk_problem.set_x_ref(weight_x_ref, x_ref);
+    piecewise_jerk_problem.set_x_ref(weight_x_ref, std::move(x_ref));
   }
   // use path reference as a optimization cost function
   if (is_valid_path_reference) {
@@ -263,14 +263,14 @@ bool PiecewiseJerkPathOptimizer::OptimizePath(
     // weight_x_ref is set to default value, where
     // l weight = weight_x_ + weight_x_ref_ = (1.0 + 0.0)
     std::vector<double> weight_x_ref_vec(kNumKnots, 0.0);
-    std::vector<double> x_ref = path_reference_l_ref;
     // increase l weight for path reference part only
     constexpr double weight_x_ref_path_reference = 1000.0;
     for (size_t i = 0; i < path_reference_size; ++i) {
       ADEBUG << path_reference_l_ref.at(i);
       weight_x_ref_vec.at(i) = weight_x_ref_path_reference;
     }
-    piecewise_jerk_problem.set_x_ref(weight_x_ref_vec, x_ref);
+    piecewise_jerk_problem.set_x_ref(std::move(weight_x_ref_vec),
+                                     std::move(path_reference_l_ref));
   }
 
   piecewise_jerk_problem.set_weight_x(w[0]);
