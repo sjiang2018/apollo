@@ -39,7 +39,7 @@ dual_variable_warm_start_config {
     ipopt_alpha_for_y: "min"
     ipopt_recalc_y: "yes"
   }
-  qp_format: OSQP
+  qp_format: IPOPT
   min_safety_distance: 0.01
   debug_osqp: false
   beta: 1.0
