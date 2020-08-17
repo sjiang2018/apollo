@@ -81,7 +81,8 @@ class OpenSpaceTrajectoryOptimizer {
       const Eigen::MatrixXd& time_result_ds,
       const std::vector<double>& XYbounds,
       const std::vector<std::vector<common::math::Vec2d>>&
-          obstacles_vertices_vec);
+          obstacles_vertices_vec,
+      double time_latency);
 
   void UpdateDebugInfo(
       ::apollo::planning_internal::OpenSpaceDebug* open_space_debug);

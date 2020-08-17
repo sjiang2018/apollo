@@ -305,7 +305,12 @@ class OpenSpaceInfo {
 
   void RecordDebug(apollo::planning_internal::Debug *ptr_debug);
 
-  void set_time_latency(double time_latency) { time_latency_ = time_latency; }
+  void set_time_latency(double time_latency) {
+    time_latency_ = time_latency;
+    AWARN << "set time_latency as " << time_latency_;
+  }
+
+  const double time_latency() const { return time_latency_; }
 
  private:
   std::string target_parking_spot_id_;

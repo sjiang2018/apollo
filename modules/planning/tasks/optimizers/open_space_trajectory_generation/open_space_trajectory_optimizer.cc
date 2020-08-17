@@ -216,14 +216,14 @@ Status OpenSpaceTrajectoryOptimizer::Plan(
         const auto time_diff_ms =
             (end_system_timestamp - start_system_timestamp) * 1000;
         ADEBUG << "total planning time spend: " << time_diff_ms << " ms.";
-        ADEBUG << i << "th trajectory size is " << xWS_vec[i].cols();
-        ADEBUG << "average time spend: " << time_diff_ms / xWS_vec[i].cols()
-               << " ms per point.";
-        ADEBUG << "average time spend after smooth: "
-               << time_diff_ms / state_result_ds_vec[i].cols()
-               << " ms per point.";
-        ADEBUG << i << "th smoothed trajectory size is "
-               << state_result_ds_vec[i].cols();
+        // AWARN << i << "th trajectory size is " << xWS_vec[i].cols();
+        // AWARN << "average time spend: " << time_diff_ms / xWS_vec[i].cols()
+        //       << " ms per point.";
+        // AWARN << "average time spend after smooth: "
+        //       << time_diff_ms / state_result_ds_vec[i].cols()
+        //       << " ms per point.";
+        // AWARN << i << "th smoothed trajectory size is "
+        //       << state_result_ds_vec[i].cols();
       }
       const auto smoother_end_timestamp = std::chrono::system_clock::now();
       std::chrono::duration<double> smoother_diff =
@@ -264,15 +264,6 @@ Status OpenSpaceTrajectoryOptimizer::Plan(
     }
   }
 
-  // record debug info
-  if (FLAGS_enable_record_debug) {
-    open_space_debug_.Clear();
-    RecordDebugInfo(trajectory_stitching_point, translate_origin, rotate_angle,
-                    end_pose, xWS, uWS, l_warm_up, n_warm_up, dual_l_result_ds,
-                    dual_n_result_ds, state_result_ds, control_result_ds,
-                    time_result_ds, XYbounds, obstacles_vertices_vec);
-  }
-
   // rescale the states to the world frame
   size_t state_size = state_result_ds.cols();
   for (size_t i = 0; i < state_size; ++i) {
@@ -285,9 +276,20 @@ Status OpenSpaceTrajectoryOptimizer::Plan(
 
   const auto end_timestamp = std::chrono::system_clock::now();
   std::chrono::duration<double> diff = end_timestamp - start_timestamp;
-  ADEBUG << "open space trajectory smoother total time: "
+  AERROR << "open space trajectory zig-zag total time: "
          << diff.count() * 1000.0 << " ms.";
   *time_latency = diff.count() * 1000.0;
+  open_space_debug_.set_time_latency(diff.count() * 1000.0);
+
+  // record debug info
+  if (FLAGS_enable_record_debug) {
+    open_space_debug_.Clear();
+    RecordDebugInfo(trajectory_stitching_point, translate_origin, rotate_angle,
+                    end_pose, xWS, uWS, l_warm_up, n_warm_up, dual_l_result_ds,
+                    dual_n_result_ds, state_result_ds, control_result_ds,
+                    time_result_ds, XYbounds, obstacles_vertices_vec,
+                    *time_latency);
+  }
 
   return Status::OK();
 }
@@ -302,7 +304,8 @@ void OpenSpaceTrajectoryOptimizer::RecordDebugInfo(
     const Eigen::MatrixXd& state_result_ds,
     const Eigen::MatrixXd& control_result_ds,
     const Eigen::MatrixXd& time_result_ds, const std::vector<double>& XYbounds,
-    const std::vector<std::vector<Vec2d>>& obstacles_vertices_vec) {
+    const std::vector<std::vector<Vec2d>>& obstacles_vertices_vec,
+    double time_latency) {
   // load information about trajectory stitching point
 
   open_space_debug_.mutable_trajectory_stitching_point()->CopyFrom(
@@ -419,6 +422,10 @@ void OpenSpaceTrajectoryOptimizer::RecordDebugInfo(
       obstacle_ptr->add_vertices_y_coords(vertex.y());
     }
   }
+
+  AWARN << "set time latency HH" << time_latency;
+
+  open_space_debug_.set_time_latency(time_latency);
 }
 
 void OpenSpaceTrajectoryOptimizer::UpdateDebugInfo(
