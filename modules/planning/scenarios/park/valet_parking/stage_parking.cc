@@ -34,10 +34,16 @@ Stage::StageStatus StageParking::Process(
     AERROR << "StageParking planning error";
     return StageStatus::ERROR;
   }
+  if (frame->open_space_info().destination_reached()) {
+    return FinishStage();
+  }
   return StageStatus::RUNNING;
 }
 
-Stage::StageStatus StageParking::FinishStage() { return Stage::FINISHED; }
+Stage::StageStatus StageParking::FinishStage() {
+  AWARN << "parking stage finished";
+  return Stage::FINISHED;
+}
 
 }  // namespace valet_parking
 }  // namespace scenario
