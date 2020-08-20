@@ -132,6 +132,7 @@ message ScenarioPullOverConfig {
       [default = 7.0];
 }
 
+
 message ScenarioStopSignUnprotectedConfig {
   optional double start_stop_sign_scenario_distance = 1
       [default = 5.0];  // meter
