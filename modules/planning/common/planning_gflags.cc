@@ -443,7 +443,7 @@ DEFINE_bool(enable_perception_obstacles, true,
 DEFINE_bool(enable_open_space_planner_thread, true,
             "Enable thread in open space planner for trajectory publish.");
 
-DEFINE_bool(use_dual_variable_warm_start, true,
+DEFINE_bool(use_dual_variable_warm_start, false,
             "whether or not enable dual variable warm start ");
 
 DEFINE_bool(use_gear_shift_trajectory, false,

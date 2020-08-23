@@ -191,6 +191,7 @@ Status OpenSpaceTrajectoryOptimizer::Plan(
               "iterative anchoring smoothing problem failed to solve");
         }
       } else {
+        AWARN << "using distance approach";
         const double start_system_timestamp =
             std::chrono::duration<double>(
                 std::chrono::system_clock::now().time_since_epoch())
@@ -600,7 +601,7 @@ bool OpenSpaceTrajectoryOptimizer::GenerateDistanceApproachTraj(
           *n_warm_up, s_warm_up, XYbounds, obstacles_num, obstacles_edges_num,
           obstacles_A, obstacles_b, state_result_ds, control_result_ds,
           time_result_ds, dual_l_result_ds, dual_n_result_ds)) {
-    ADEBUG << "Distance approach problem solved successfully!";
+    AWARN << "Distance approach problem solved successfully!";
   } else {
     ADEBUG << "Distance approach problem failed to solve";
     if (FLAGS_enable_smoother_failsafe) {

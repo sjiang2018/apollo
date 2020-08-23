@@ -281,6 +281,7 @@ if __name__ == '__main__':
             result = SmoothTrajectory(visualize_flag, sx, sy)
             # if result[0] and result[3]:  # success cases only
             if result[0]:
+                print(result[0])
                 success_count += 1
                 planning_time_stats.append(result[-1])
                 ipopt_time_stats.append(result[-2][0])
@@ -288,7 +289,7 @@ if __name__ == '__main__':
                 hybrid_time_stats.append(result[-4][0])
                 end_pose_dist_stats.append(result[1])
                 end_pose_heading_stats.append(result[2])
-
+    print(f"test count {test_count}")
     print("success rate is " + str(float(success_count) / float(test_count)))
     print("min is " + str(min(planning_time_stats)))
     print("max is " + str(max(planning_time_stats)))
