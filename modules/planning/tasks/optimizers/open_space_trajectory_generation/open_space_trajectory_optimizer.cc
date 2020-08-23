@@ -276,8 +276,7 @@ Status OpenSpaceTrajectoryOptimizer::Plan(
 
   const auto end_timestamp = std::chrono::system_clock::now();
   std::chrono::duration<double> diff = end_timestamp - start_timestamp;
-  AERROR << "open space trajectory zig-zag total time: "
-         << diff.count() * 1000.0 << " ms.";
+
   *time_latency = diff.count() * 1000.0;
   open_space_debug_.set_time_latency(diff.count() * 1000.0);
 

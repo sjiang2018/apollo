@@ -240,7 +240,6 @@ Status OpenSpaceTrajectoryProvider::Process() {
         stitching_trajectory, end_pose, XYbounds, rotate_angle,
         translate_origin, obstacles_edges_num, obstacles_A, obstacles_b,
         obstacles_vertices_vec, &time_latency);
-    AWARN << "open space zig-zag trajectory time latency: " << time_latency;
     frame_->mutable_open_space_info()->set_time_latency(time_latency);
 
     // If status is OK, update vehicle trajectory;
@@ -269,7 +268,6 @@ void OpenSpaceTrajectoryProvider::GenerateTrajectoryThread() {
           thread_data.translate_origin, thread_data.obstacles_edges_num,
           thread_data.obstacles_A, thread_data.obstacles_b,
           thread_data.obstacles_vertices_vec, &time_latency);
-      AWARN << "open space zig-zag trajectory time latency: " << time_latency;
       frame_->mutable_open_space_info()->set_time_latency(time_latency);
       if (status == Status::OK()) {
         std::lock_guard<std::mutex> lock(open_space_mutex_);

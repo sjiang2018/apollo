@@ -305,10 +305,7 @@ class OpenSpaceInfo {
 
   void RecordDebug(apollo::planning_internal::Debug *ptr_debug);
 
-  void set_time_latency(double time_latency) {
-    time_latency_ = time_latency;
-    AWARN << "set time_latency as " << time_latency_;
-  }
+  void set_time_latency(double time_latency) { time_latency_ = time_latency; }
 
   const double time_latency() const { return time_latency_; }
 
