@@ -150,7 +150,7 @@ def SmoothTrajectory(visualize_flag, sx, sy):
         for i in range(0, size[0] * 16):
             opt_dual_n_out.append(float(opt_dual_n[i]))
         # trajectories plot
-        fig1 = plt.figure(1)
+        fig1 = plt.figure(1, clear=True)
         ax = fig1.add_subplot(111)
         for i in range(0, size[0]):
             # warm start
@@ -199,7 +199,7 @@ def SmoothTrajectory(visualize_flag, sx, sy):
         plt.axis('equal')
 
         # input plot
-        fig2 = plt.figure(2)
+        fig2 = plt.figure(2, clear=True)
         v_graph = fig2.add_subplot(411)
         v_graph.title.set_text('v')
         v_graph.plot(np.linspace(0, size[0], size[0]), v_out)
@@ -216,15 +216,24 @@ def SmoothTrajectory(visualize_flag, sx, sy):
         steer_graph.title.set_text('t')
         steer_graph.plot(np.linspace(0, size[0], size[0]), opt_time_out)
         # dual variables
-        fig3 = plt.figure(3)
+        fig3 = plt.figure(3, clear=True)
         dual_l_graph = fig3.add_subplot(211)
         dual_l_graph.title.set_text('dual_l')
         dual_l_graph.plot(np.linspace(0, size[0] * 6, size[0] * 6), opt_dual_l_out)
         dual_n_graph = fig3.add_subplot(212)
         dual_n_graph.title.set_text('dual_n')
         dual_n_graph.plot(np.linspace(0, size[0] * 16, size[0] * 16), opt_dual_n_out)
-        plt.show()
-        return True
+        fig1.savefig(f'/apollo/data/OpenSpace_H/x_{sx}_y_{sy}_plot.png')
+        fig2.savefig(f'/apollo/data/OpenSpace_H/x_{sx}_y_{sy}_temporal_plot.png')
+        fig3.savefig(f'/apollo/data/OpenSpace_H/x_{sx}_y_{sy}_dual_plot.png')
+        # return True
+        # check end_pose distacne
+        end_pose_dist = math.sqrt((opt_x_out[-1] - ex)**2 + (opt_y_out[-1] - ey)**2)
+        end_pose_heading = abs(opt_phi_out[-1] - ephi)
+        reach_end_pose = (end_pose_dist <= 0.1 and end_pose_heading <= 0.17)
+        return [success, end_pose_dist, end_pose_heading, reach_end_pose, opt_x_out, opt_y_out,
+                opt_phi_out, opt_v_out, opt_a_out, opt_steer_out, opt_time_out,
+                hybrid_time, dual_time, ipopt_time, planning_time]
 
     if not visualize_flag:
         if success:
@@ -261,16 +270,15 @@ def SmoothTrajectory(visualize_flag, sx, sy):
 
 
 if __name__ == '__main__':
-    # visualize_flag = True
-    # SmoothTrajectory(visualize_flag)
-
-    visualize_flag = False
+    visualize_flag = True
     planning_time_stats = []
     hybrid_time_stats = []
     dual_time_stats = []
     ipopt_time_stats = []
     end_pose_dist_stats = []
     end_pose_heading_stats = []
+    opt_steering = []
+    opt_acc = []
 
     test_count = 0
     success_count = 0
@@ -279,6 +287,7 @@ if __name__ == '__main__':
             print("sx is " + str(sx) + " and sy is " + str(sy))
             test_count += 1
             result = SmoothTrajectory(visualize_flag, sx, sy)
+            # print(result)
             # if result[0] and result[3]:  # success cases only
             if result[0]:
                 print(result[0])
@@ -289,7 +298,13 @@ if __name__ == '__main__':
                 hybrid_time_stats.append(result[-4][0])
                 end_pose_dist_stats.append(result[1])
                 end_pose_heading_stats.append(result[2])
-    print(f"test count {test_count}")
+                mean_opt_steering = sum(result[8]) / len(result[8])
+                opt_steering.append(np.mean(mean_opt_steering))
+                mean_opt_acc = sum(result[9]) / len(result[9])
+                opt_acc.append(mean_opt_acc)
+            # break
+        # break
+
     print("success rate is " + str(float(success_count) / float(test_count)))
     print("min is " + str(min(planning_time_stats)))
     print("max is " + str(max(planning_time_stats)))
@@ -315,3 +330,42 @@ if __name__ == '__main__':
     print("average ipopt time(s): %4.4f, with max: %4.4f, min: %4.4f" % (
         sum(ipopt_time_stats) / len(ipopt_time_stats) / 1000.0, max(ipopt_time_stats) / 1000.0,
         min(ipopt_time_stats) / 1000.0))
+    print(f"average steering mean: {sum(opt_steering)/len(opt_steering)}")
+    print(f"average acc mean: {sum(opt_acc)/len(opt_acc)}")
+
+
+# planning time is 0.5791006088256836
+# success rate is 1.0
+# min is 0.49576711654663086
+# max is 2.148515462875366
+# average is 1.0132886737585067
+# max end_pose_dist difference is: 0.0
+# min end_pose_dist difference is: 0.0
+# average end_pose_dist difference is: 0.0
+# max end_pose_heading difference is: 0.0
+# min end_pose_heading difference is: 0.0
+# average end_pose_heading difference is: 0.0
+# average hybrid time(s): 0.4177, with max: 1.3754, min: 0.0663
+# average dual time(s): 0.0875, with max: 0.3113, min: 0.0148
+# average ipopt time(s): 0.5074, with max: 0.9897, min: 0.3162
+# average steering mean: -0.00995424158824851
+# average steering mean: -0.18983562904762188
+# [sjiang@in_dev_docker:/apollo]$ ./apollo.sh build
+
+
+# planning time is 0.2905442714691162
+# success rate is 1.0
+# min is 0.2640087604522705
+# max is 3.519197463989258
+# average is 0.9154177308082581
+# max end_pose_dist difference is: 0.0
+# min end_pose_dist difference is: 0.0
+# average end_pose_dist difference is: 0.0
+# max end_pose_heading difference is: 0.0
+# min end_pose_heading difference is: 0.0
+# average end_pose_heading difference is: 0.0
+# average hybrid time(s): 0.4084, with max: 1.0938, min: 0.0312
+# average dual time(s): 0.0000, with max: 0.0001, min: 0.0000
+# average ipopt time(s): 0.5062, with max: 2.8263, min: 0.2322
+# average steering mean: -9.780978799442588e-19
+# average acc mean: -0.1729467167533573
