@@ -265,7 +265,7 @@ bool PiecewiseJerkPathOptimizer::OptimizePath(
     // l weight = weight_x_ + weight_x_ref_ = (1.0 + 0.0)
     std::vector<double> weight_x_ref_vec(kNumKnots, 0.0);
     // increase l weight for path reference part only
-    constexpr double weight_x_ref_path_reference = 1000.0;
+    constexpr double weight_x_ref_path_reference = 100000.0;
     // parameter adjust function
     // sin(log(x + 3.0 * M_PI / 2.0)); 18.4 ~ 0
     // 18/path_reference_size
