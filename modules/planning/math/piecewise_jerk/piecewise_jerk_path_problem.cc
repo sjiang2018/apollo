@@ -39,6 +39,12 @@ void PiecewiseJerkPathProblem::CalculateKernel(std::vector<c_float>* P_data,
   // x(i)^2 * (w_x + w_x_ref[i]), w_x_ref might be a uniform value for all x(i)
   // or piecewise values for different x(i)
   for (int i = 0; i < n - 1; ++i) {
+    if (has_x_ref_) {
+      //   AINFO << "!!"
+      //         << "at [" << i << "], weight is: [" << weight_x_ref_vec_[i] <<
+      //         "]";
+    }
+
     columns[i].emplace_back(i, (weight_x_ + weight_x_ref_vec_[i]) /
                                    (scale_factor_[0] * scale_factor_[0]));
     ++value_index;
@@ -109,6 +115,7 @@ void PiecewiseJerkPathProblem::CalculateOffset(std::vector<c_float>* q) {
 
   if (has_x_ref_) {
     for (int i = 0; i < n; ++i) {
+      //   AINFO << "at [" << i << "], x_ref_ is: [" << x_ref_[i] << "]";
       q->at(i) += -2.0 * weight_x_ref_vec_.at(i) * x_ref_[i] / scale_factor_[0];
     }
   }
