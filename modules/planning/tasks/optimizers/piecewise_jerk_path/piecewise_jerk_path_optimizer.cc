@@ -250,6 +250,7 @@ bool PiecewiseJerkPathOptimizer::OptimizePath(
   // Because path reference might also make the end_state != 0
   // we have to exclude this condition here
   if (end_state[0] != 0 && !is_valid_path_reference) {
+    AINFO << "set as 20";
     std::vector<double> x_ref(kNumKnots, end_state[0]);
     const auto& pull_over_type = injector_->planning_context()
                                      ->planning_status()
@@ -261,6 +262,7 @@ bool PiecewiseJerkPathOptimizer::OptimizePath(
   }
   // use path reference as a optimization cost function
   if (is_valid_path_reference) {
+    AINFO << "valid path reference";
     // for non-path-reference part
     // weight_x_ref is set to default value, where
     // l weight = weight_x_ + weight_x_ref_ = (1.0 + 0.0)
