@@ -25,14 +25,15 @@ stage_config: {
   task_config: {
     task_type: LEARNING_MODEL_INFERENCE_TASK
     learning_model_inference_task_config {
-      model_type: SELF_CNN_LSTM
-      cpu_model_file: "/apollo/modules/planning/data/model/cpu_cnn_lstm_aux_box.pt"
-      gpu_model_file: "/apollo/modules/planning/data/model/gpu_cnn_lstm_aux_box.pt"
+      model_type: HISTORY_UNCONDITIONED_CNN_LSTM
+      cpu_model_file: "/apollo/modules/planning/data/model/cpu_kinematic_cnn_lstm_aux_model_epoch10_valloss0.726947.pt"
+      gpu_model_file: "/apollo/modules/planning/data/model/gpu_kinematic_cnn_lstm_aux_model_epoch10_valloss0.726947.pt"
       use_cuda: true
       allow_empty_learning_based_data: true
       allow_empty_output_trajectory: true
     }
   }
+
 
   task_config: {
     task_type: LANE_CHANGE_DECIDER
