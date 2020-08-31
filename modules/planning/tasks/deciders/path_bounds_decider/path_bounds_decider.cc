@@ -215,8 +215,8 @@ Status PathBoundsDecider::Process(
     if (regular_path_bound.empty()) {
       continue;
     }
-    CHECK_LE(adc_frenet_l_, std::get<2>(regular_path_bound[0]));
-    CHECK_GE(adc_frenet_l_, std::get<1>(regular_path_bound[0]));
+    // CHECK_LE(adc_frenet_l_, std::get<2>(regular_path_bound[0]));
+    // CHECK_GE(adc_frenet_l_, std::get<1>(regular_path_bound[0]));
     // Update the path boundary into the reference_line_info.
     std::vector<std::pair<double, double>> regular_path_bound_pair;
     for (size_t i = 0; i < regular_path_bound.size(); ++i) {
@@ -321,8 +321,8 @@ Status PathBoundsDecider::GenerateRegularPathBound(
   // PathBoundsDebugString(*path_bound);
 
   // 2. Decide a rough boundary based on lane info and ADC's position
-  if (!GetBoundaryFromLanesAndADC(reference_line_info, lane_borrow_info, 0.1,
-                                  path_bound, borrow_lane_type)) {
+  if (!GetBoundaryFromLanesAndADC(reference_line_info, lane_borrow_info, false,
+                                  0.1, path_bound, borrow_lane_type)) {
     const std::string msg =
         "Failed to decide a rough boundary based on "
         "road information.";
@@ -375,8 +375,8 @@ Status PathBoundsDecider::GenerateLaneChangePathBound(
   // 2. Decide a rough boundary based on lane info and ADC's position
   std::string dummy_borrow_lane_type;
   if (!GetBoundaryFromLanesAndADC(reference_line_info,
-                                  LaneBorrowInfo::NO_BORROW, 0.1, path_bound,
-                                  &dummy_borrow_lane_type)) {
+                                  LaneBorrowInfo::NO_BORROW, false, 0.1,
+                                  path_bound, &dummy_borrow_lane_type)) {
     const std::string msg =
         "Failed to decide a rough boundary based on "
         "road information.";
@@ -530,8 +530,8 @@ Status PathBoundsDecider::GenerateFallbackPathBound(
   // 2. Decide a rough boundary based on lane info and ADC's position
   std::string dummy_borrow_lane_type;
   if (!GetBoundaryFromLanesAndADC(reference_line_info,
-                                  LaneBorrowInfo::NO_BORROW, 0.5, path_bound,
-                                  &dummy_borrow_lane_type)) {
+                                  LaneBorrowInfo::NO_BORROW, true, 0.5,
+                                  path_bound, &dummy_borrow_lane_type)) {
     const std::string msg =
         "Failed to decide a rough fallback boundary based on "
         "road information.";
@@ -1100,8 +1100,9 @@ bool PathBoundsDecider::GetBoundaryFromADC(
 // TODO(jiacheng): this function is to be retired soon.
 bool PathBoundsDecider::GetBoundaryFromLanesAndADC(
     const ReferenceLineInfo& reference_line_info,
-    const LaneBorrowInfo& lane_borrow_info, double ADC_buffer,
-    PathBound* const path_bound, std::string* const borrow_lane_type) {
+    const LaneBorrowInfo& lane_borrow_info, const bool is_fallback,
+    double ADC_buffer, PathBound* const path_bound,
+    std::string* const borrow_lane_type) {
   // Sanity checks.
   CHECK_NOTNULL(path_bound);
   ACHECK(!path_bound->empty());
@@ -1192,7 +1193,9 @@ bool PathBoundsDecider::GetBoundaryFromLanesAndADC(
     double curr_right_bound = 0.0;
 
     if (config_.path_bounds_decider_config()
-            .is_extend_lane_bands_to_include_adc()) {
+            .is_extend_lane_bands_to_include_adc() ||
+        is_fallback) {
+      // extend path bounds to include ADC in fallback path bounds.
       double curr_left_bound_adc =
           std::fmax(adc_l_to_lane_center_,
                     adc_l_to_lane_center_ + ADC_speed_buffer) +
