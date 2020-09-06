@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,10 @@ DESCRIPTION:
   as is as a string to --compiler-options of nvcc. When "-x cuda" is not
   present, this wrapper invokes hybrid_driver_is_not_gcc with the input
   arguments as is.
+
+NOTES(storypku): Move this file to
+    //third_party/gpus/crosstool/crosstool_wrapper_is_not_gcc ?
+
 """
 
 from __future__ import print_function
@@ -49,7 +53,7 @@ PREFIX_DIR = os.path.dirname(GCC_HOST_COMPILER_PATH)
 NVCC_VERSION = '%{cuda_version}'
 
 def Log(s):
-  print('gpus/crosstool: {0}'.format(s))
+  print('//third_party/gpus/crosstool: {0}'.format(s))
 
 
 def GetOptionValue(argv, option):
@@ -57,7 +61,7 @@ def GetOptionValue(argv, option):
 
   Args:
     argv: A list of strings, possibly the argv passed to main().
-    option: The option whose value to extract, with the leading '-'.
+    option: The option whose value to extract, without the leading '-'.
 
   Returns:
     A list of values, either directly following the option,
@@ -180,12 +184,12 @@ def InvokeNvcc(argv, log=False):
   undefines = GetOptionValue(argv, '-U')
   undefines = ''.join([' -U' + define for define in undefines])
   std_options = GetOptionValue(argv, '-std')
-  # Supported -std flags as of CUDA 9.0. Only keep last to mimic gcc/clang.
+  # Supported -std flags as of CUDA 10.2. Only keep last to mimic gcc/clang.
+  # See: https://gist.github.com/ax3l/9489132#device-side-c-standard-support
+  # Updated by storypku
   nvcc_allowed_std_options = ["c++03", "c++11", "c++14"]
   std_options = ''.join([' -std=' + define
       for define in std_options if define in nvcc_allowed_std_options][-1:])
-  fatbin_options = ''.join([' --fatbin-options=' + option
-      for option in GetOptionValue(argv, '-Xcuda-fatbinary')])
 
   # The list of source files get passed after the -c option. I don't know of
   # any other reliable way to just get the list of source files to be compiled.
@@ -230,7 +234,6 @@ def InvokeNvcc(argv, log=False):
   nvccopts += std_options
   nvccopts += m_options
   nvccopts += warning_options
-  nvccopts += fatbin_options
 
   if depfiles:
     # Generate the dependency file
@@ -267,6 +270,7 @@ def main():
   if args.x and args.x[0] == 'cuda':
     if args.cuda_log: Log('-x cuda')
     leftover = [pipes.quote(s) for s in leftover]
+    args.cuda_log = True
     if args.cuda_log: Log('using nvcc')
     return InvokeNvcc(leftover, log=args.cuda_log)
 
