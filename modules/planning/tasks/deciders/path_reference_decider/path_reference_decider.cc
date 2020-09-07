@@ -23,13 +23,14 @@
 #include <utility>
 #include <vector>
 
+#include "modules/planning/proto/planning_config.pb.h"
+
 #include "modules/common/configs/vehicle_config_helper.h"
 #include "modules/common/math/box2d.h"
 #include "modules/common/math/line_segment2d.h"
 #include "modules/planning/common/path/discretized_path.h"
 #include "modules/planning/common/path_boundary.h"
 #include "modules/planning/common/planning_context.h"
-#include "modules/planning/proto/planning_config.pb.h"
 #include "modules/planning/tasks/task.h"
 
 namespace apollo {
@@ -162,7 +163,16 @@ Status PathReferenceDecider::Process(Frame *frame,
     return Status::OK();
   }
   std::vector<PathPoint> path_reference;
-  ConvertTrajectoryToPath(learning_model_trajectory, &path_reference);
+  // stiching
+  DiscretizedTrajectory stitched_learning_model_trajectory;
+  AWARN << "learning_model_trajectory size is"
+        << learning_model_trajectory.size();
+  reference_line_info->AdjustTrajectoryWhichStartsFromCurrentPos(
+      frame->PlanningStartPoint(), learning_model_trajectory,
+      &stitched_learning_model_trajectory);
+  AWARN << "stitched_learning_model_trajectory size is"
+        << stitched_learning_model_trajectory.size();
+  ConvertTrajectoryToPath(stitched_learning_model_trajectory, &path_reference);
   const std::string path_reference_name = "path_reference";
   RecordDebugInfo(path_reference, path_reference_name, reference_line_info);
 
@@ -467,9 +477,11 @@ void PathReferenceDecider::RecordDebugInfo(
   auto *ptr_display_path =
       reference_line_info->mutable_debug()->mutable_planning_data()->add_path();
   ptr_display_path->set_name(path_name);
+  //   ptr_display_path->mutable_path_point()->CopyFrom(
+  //       {path_reference_data.discretized_path().begin(),
+  //        path_reference_data.discretized_path().end()});
   ptr_display_path->mutable_path_point()->CopyFrom(
-      {path_reference_data.discretized_path().begin(),
-       path_reference_data.discretized_path().end()});
+      {path_points.begin(), path_points.end()});
 }
 
 }  // namespace planning
