@@ -127,11 +127,11 @@ Status PathReuseDecider::Process(Frame* const frame,
     if (!frame->current_frame_planned_trajectory().is_replan() &&
         speed_optimization_successful && IsCollisionFree(reference_line_info) &&
         TrimHistoryPath(frame, reference_line_info)) {
-      ADEBUG << "reuse path";
+      //   AWARN << "reuse path";
       ++reusable_path_counter_;  // count reusable path
     } else {
       // stop reuse path
-      ADEBUG << "stop reuse path";
+      //   AWARN << "stop reuse path";
       path_reusable_ = false;
     }
   } else {
@@ -152,7 +152,7 @@ Status PathReuseDecider::Process(Frame* const frame,
     // 2. trimming successful
     // 3. no statical obstacle collision.
     if ((front_static_obstacle_cycle_counter <= kWaitCycle ||
-         ignore_blocking_obstacle) &&
+         ignore_blocking_obstacle || !valid_model_output) &&
         speed_optimization_successful && IsCollisionFree(reference_line_info) &&
         TrimHistoryPath(frame, reference_line_info)) {
       // enable reuse path
