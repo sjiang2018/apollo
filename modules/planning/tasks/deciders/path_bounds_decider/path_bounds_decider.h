@@ -28,7 +28,9 @@
 #include <vector>
 
 #include "gtest/gtest.h"
+
 #include "modules/planning/proto/planning_config.pb.h"
+
 #include "modules/planning/tasks/deciders/decider.h"
 
 namespace apollo {
@@ -257,7 +259,8 @@ class PathBoundsDecider : public Decider {
    */
   bool UpdatePathBoundaryWithBuffer(
       size_t idx, double left_bound, double right_bound,
-      std::vector<std::tuple<double, double, double>>* const path_boundaries);
+      std::vector<std::tuple<double, double, double>>* const path_boundaries,
+      bool is_lane_bound = false);
 
   /** @brief Update the path_boundary at "idx", as well as the new center-line.
    *         It also checks if ADC is blocked (lmax < lmin).

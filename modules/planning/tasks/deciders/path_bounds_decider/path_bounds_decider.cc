@@ -1130,13 +1130,13 @@ bool PathBoundsDecider::GetBoundaryFromLanesAndADC(
     // 1. Get the current lane width at current point.
     double curr_lane_left_width = 0.0;
     double curr_lane_right_width = 0.0;
+    double offset_to_lane_center = 0.0;
     if (!reference_line.GetLaneWidth(curr_s, &curr_lane_left_width,
                                      &curr_lane_right_width)) {
       AWARN << "Failed to get lane width at s = " << curr_s;
       curr_lane_left_width = past_lane_left_width;
       curr_lane_right_width = past_lane_right_width;
     } else {
-      double offset_to_lane_center = 0.0;
       reference_line.GetOffsetToMap(curr_s, &offset_to_lane_center);
       curr_lane_left_width += offset_to_lane_center;
       curr_lane_right_width -= offset_to_lane_center;
@@ -1203,6 +1203,31 @@ bool PathBoundsDecider::GetBoundaryFromLanesAndADC(
     double curr_left_bound = 0.0;
     double curr_right_bound = 0.0;
 
+    // check if lane bound is also a road bound
+    double past_road_left_width = adc_lane_width_ / 2.0;
+    double past_road_right_width = adc_lane_width_ / 2.0;
+    double curr_road_left_width;
+    double curr_road_right_width;
+    if (!reference_line.GetRoadWidth(curr_s, &curr_road_left_width,
+                                     &curr_road_right_width)) {
+      AWARN << "Failed to get raod width at s = " << curr_s;
+      curr_road_left_width = past_road_left_width;
+      curr_road_right_width = past_road_right_width;
+    } else {
+      curr_road_left_width += offset_to_lane_center;
+      curr_road_right_width -= offset_to_lane_center;
+      past_road_left_width = curr_road_left_width;
+      past_road_right_width = curr_road_right_width;
+    }
+    bool is_lane_boundary;
+    if (curr_road_left_width == curr_lane_left_width ||
+        curr_road_right_width == curr_lane_right_width) {
+      // when lane bound is also road bound
+      is_lane_boundary = false;
+    } else {
+      is_lane_boundary = true;
+    }
+
     if (config_.path_bounds_decider_config()
             .is_extend_lane_bounds_to_include_adc() ||
         is_fallback) {
@@ -1233,7 +1258,7 @@ bool PathBoundsDecider::GetBoundaryFromLanesAndADC(
 
     // 4. Update the boundary.
     if (!UpdatePathBoundaryWithBuffer(i, curr_left_bound, curr_right_bound,
-                                      path_bound)) {
+                                      path_bound, is_lane_boundary)) {
       path_blocked_idx = static_cast<int>(i);
     }
     if (path_blocked_idx != -1) {
@@ -1774,17 +1799,22 @@ double PathBoundsDecider::GetBufferBetweenADCCenterAndEdge() {
 
 bool PathBoundsDecider::UpdatePathBoundaryWithBuffer(
     size_t idx, double left_bound, double right_bound,
-    PathBound* const path_boundaries) {
+    PathBound* const path_boundaries, bool is_lane_bound) {
+  double adc_buffer_coeff;
+  if (is_lane_bound) {
+    adc_buffer_coeff = config_.path_bounds_decider_config().adc_buffer_coeff();
+  } else {
+    adc_buffer_coeff = 1.0;
+  }
+
   // Update the right bound (l_min):
   double new_l_min = std::fmax(
       std::get<1>((*path_boundaries)[idx]),
-      right_bound + config_.path_bounds_decider_config().adc_buffer_coeff() *
-                        GetBufferBetweenADCCenterAndEdge());
+      right_bound + adc_buffer_coeff * GetBufferBetweenADCCenterAndEdge());
   // Update the left bound (l_max):
   double new_l_max = std::fmin(
       std::get<2>((*path_boundaries)[idx]),
-      left_bound - config_.path_bounds_decider_config().adc_buffer_coeff() *
-                       GetBufferBetweenADCCenterAndEdge());
+      left_bound - adc_buffer_coeff * GetBufferBetweenADCCenterAndEdge());
 
   // Check if ADC is blocked.
   // If blocked, don't update anything, return false.
