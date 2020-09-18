@@ -255,12 +255,14 @@ class PathBoundsDecider : public Decider {
    *  @param The minimum left boundary (l_max)
    *  @param The maximum right boundary (l_min)
    *  @param The path_boundaries (its content at idx will be updated)
+   *  @param Is the left bound comes from lane boundary
+   *  @param Is the right bound comes from lane boundary
    *  @return If path is good, true; if path is blocked, false.
    */
   bool UpdatePathBoundaryWithBuffer(
       size_t idx, double left_bound, double right_bound,
       std::vector<std::tuple<double, double, double>>* const path_boundaries,
-      bool is_lane_bound = false);
+      bool is_left_lane_bound = false, bool is_right_lane_bound = false);
 
   /** @brief Update the path_boundary at "idx", as well as the new center-line.
    *         It also checks if ADC is blocked (lmax < lmin).
