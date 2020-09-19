@@ -151,6 +151,7 @@ Status PathBoundsDecider::Process(
   // If it's a lane-change reference-line, generate lane-change path boundary.
   if (FLAGS_enable_smarter_lane_change &&
       reference_line_info->IsChangeLanePath()) {
+    AWARN << "Changing lane";
     PathBound lanechange_path_bound;
     Status ret = GenerateLaneChangePathBound(*reference_line_info,
                                              &lanechange_path_bound);
@@ -332,8 +333,8 @@ Status PathBoundsDecider::GenerateRegularPathBound(
   // PathBoundsDebugString(*path_bound);
 
   // 2. Decide a rough boundary based on lane info and ADC's position
-  if (!GetBoundaryFromLanesAndADC(reference_line_info, lane_borrow_info, false,
-                                  0.1, path_bound, borrow_lane_type)) {
+  if (!GetBoundaryFromLanesAndADC(reference_line_info, lane_borrow_info, 0.1,
+                                  path_bound, borrow_lane_type)) {
     const std::string msg =
         "Failed to decide a rough boundary based on "
         "road information.";
@@ -386,8 +387,8 @@ Status PathBoundsDecider::GenerateLaneChangePathBound(
   // 2. Decide a rough boundary based on lane info and ADC's position
   std::string dummy_borrow_lane_type;
   if (!GetBoundaryFromLanesAndADC(reference_line_info,
-                                  LaneBorrowInfo::NO_BORROW, false, 0.1,
-                                  path_bound, &dummy_borrow_lane_type)) {
+                                  LaneBorrowInfo::NO_BORROW, 0.1, path_bound,
+                                  &dummy_borrow_lane_type, true)) {
     const std::string msg =
         "Failed to decide a rough boundary based on "
         "road information.";
@@ -541,8 +542,8 @@ Status PathBoundsDecider::GenerateFallbackPathBound(
   // 2. Decide a rough boundary based on lane info and ADC's position
   std::string dummy_borrow_lane_type;
   if (!GetBoundaryFromLanesAndADC(reference_line_info,
-                                  LaneBorrowInfo::NO_BORROW, true, 0.5,
-                                  path_bound, &dummy_borrow_lane_type)) {
+                                  LaneBorrowInfo::NO_BORROW, 0.5, path_bound,
+                                  &dummy_borrow_lane_type, true)) {
     const std::string msg =
         "Failed to decide a rough fallback boundary based on "
         "road information.";
@@ -1111,9 +1112,9 @@ bool PathBoundsDecider::GetBoundaryFromADC(
 // TODO(jiacheng): this function is to be retired soon.
 bool PathBoundsDecider::GetBoundaryFromLanesAndADC(
     const ReferenceLineInfo& reference_line_info,
-    const LaneBorrowInfo& lane_borrow_info, const bool is_fallback,
-    double ADC_buffer, PathBound* const path_bound,
-    std::string* const borrow_lane_type) {
+    const LaneBorrowInfo& lane_borrow_info, double ADC_buffer,
+    PathBound* const path_bound, std::string* const borrow_lane_type,
+    bool is_fallback_lanechange) {
   // Sanity checks.
   CHECK_NOTNULL(path_bound);
   ACHECK(!path_bound->empty());
@@ -1218,35 +1219,11 @@ bool PathBoundsDecider::GetBoundaryFromLanesAndADC(
     double curr_left_bound = 0.0;
     double curr_right_bound = 0.0;
 
-    // // check if lane bound is also a road bound
-    // double past_road_left_width = adc_lane_width_ / 2.0;
-    // double past_road_right_width = adc_lane_width_ / 2.0;
-    // double curr_road_left_width;
-    // double curr_road_right_width;
-    // if (!reference_line.GetRoadWidth(curr_s, &curr_road_left_width,
-    //                                  &curr_road_right_width)) {
-    //   AWARN << "Failed to get raod width at s = " << curr_s;
-    //   curr_road_left_width = past_road_left_width;
-    //   curr_road_right_width = past_road_right_width;
-    // } else {
-    //   curr_road_left_width += offset_to_lane_center;
-    //   curr_road_right_width -= offset_to_lane_center;
-    //   past_road_left_width = curr_road_left_width;
-    //   past_road_right_width = curr_road_right_width;
-    // }
-    // bool is_lane_boundary;
-    // if (curr_road_left_width == curr_lane_left_width ||
-    //     curr_road_right_width == curr_lane_right_width) {
-    //   // when lane bound is also road bound
-    //   is_lane_boundary = false;
-    // } else {
-    //   is_lane_boundary = true;
-    // }
-
     if (config_.path_bounds_decider_config()
             .is_extend_lane_bounds_to_include_adc() ||
-        is_fallback) {
-      // extend path bounds to include ADC in fallback path bounds.
+        is_fallback_lanechange) {
+      // extend path bounds to include ADC in fallback or change lane path
+      // bounds.
       double curr_left_bound_adc =
           std::fmax(adc_l_to_lane_center_,
                     adc_l_to_lane_center_ + ADC_speed_buffer) +

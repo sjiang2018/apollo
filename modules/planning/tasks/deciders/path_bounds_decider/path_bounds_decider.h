@@ -193,10 +193,9 @@ class PathBoundsDecider : public Decider {
    */
   bool GetBoundaryFromLanesAndADC(
       const ReferenceLineInfo& reference_line_info,
-      const LaneBorrowInfo& lane_borrow_info, const bool is_fallback,
-      double ADC_buffer,
+      const LaneBorrowInfo& lane_borrow_info, double ADC_buffer,
       std::vector<std::tuple<double, double, double>>* const path_bound,
-      std::string* const borrow_lane_type);
+      std::string* const borrow_lane_type, bool is_fallback_lanechange = false);
 
   /** @brief Update left boundary by lane_left_width
    *   This is for normal pull-over, which uses lane boundary as left boundary
