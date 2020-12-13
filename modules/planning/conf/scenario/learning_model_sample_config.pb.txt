@@ -14,7 +14,7 @@ stage_config: {
     learning_model_inference_task_config {
       model_type: CNN_LSTM
       cpu_model_file: "/apollo/modules/planning/data/model/cpu_test_model_cnn_lstm.pt"
-      gpu_model_file: "/apollo/modules/planning/data/model/gpu_test_model_cnn_lstm.pt"
+      gpu_model_file: "/apollo/modules/planning/data/model/branch_epoch10_hidden.pt"
       use_cuda: true
     }
   }
